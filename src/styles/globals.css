@@ -1,0 +1,37 @@
+@import url("https://fonts.googleapis.com/css2?family=Basic&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Basic&family=Lato&display=swap");
+
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.button {
+  @apply py-3 px-10 font-Basic text-white tracking-wider rounded-full shadow-xl bg-primary;
+}
+.title {
+  @apply font-Basic text-primary text-3xl md:text-3xl tracking-tight;
+}
+.form-field {
+  @apply my-3 md:my-0;
+}
