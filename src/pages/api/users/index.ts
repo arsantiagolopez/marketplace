@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { UserEntity } from "../../../types";
-import { getUserId } from "../../../utils/getUserId";
+import { getUserSessionAndId } from "../../../utils/getUserSessionAndId";
 import { Supabase } from "../../../utils/supabase";
 
 /**
@@ -13,7 +13,7 @@ const getUser = async (
   res: NextApiResponse
 ): Promise<UserEntity | void> => {
   try {
-    const userId = await getUserId({ req });
+    const { userId } = (await getUserSessionAndId({ req })) || {};
 
     if (!userId) {
       return res.status(400).json({
@@ -83,7 +83,7 @@ const updateUser = async (
   const { body } = req;
 
   try {
-    const userId = await getUserId({ req });
+    const userId = await getUserSessionAndId({ req });
 
     if (!userId) {
       return res

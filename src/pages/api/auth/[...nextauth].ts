@@ -55,7 +55,7 @@ export default NextAuth({
         .select("walletAddress, name, isSeller, sellerProfiles(name)")
         .single();
 
-      const { sellerProfiles, ...rest } = data;
+      const { sellerProfiles, ...rest } = data || {};
 
       user = { ...rest };
 

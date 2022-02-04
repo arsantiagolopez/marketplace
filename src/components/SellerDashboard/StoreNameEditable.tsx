@@ -59,7 +59,7 @@ const StoreNameEditable: FC<Props> = ({
 
   return (
     <div
-      className={`flex flex-row items-baseline w-full py-2 truncate ${
+      className={`flex flex-row w-full py-2 truncate ${
         isActiveUpdate && "animate-pulse"
       }`}
     >

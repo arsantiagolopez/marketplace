@@ -10,44 +10,50 @@ interface Props {
 
 interface Response {
   /* Current ETH price rate */
-  price: number | null;
+  price: string | null;
   /* Result of either convertUsdToEth or convertEthToUsd if ether passed */
-  result: number | null;
+  result: string | null;
 }
 
 const useEthPrice = ({
   convertUsdToEth,
   convertEthToUsd,
 }: Props = {}): Response => {
-  const [price, setPrice] = useState<number | null>(null);
-  const [result, setResult] = useState<number | null>(null);
+  const [price, setPrice] = useState<string | null>(null);
+  const [result, setResult] = useState<string | null>(null);
 
   // Get current USD price rate for ETH
   const getPrice = async (): Promise<void> => {
     const COINBASE_API_ENDPOINT = "https://api.coinbase.com/v2/exchange-rates";
 
-    const { data, status } = await axios.get(`${COINBASE_API_ENDPOINT}`, {
-      params: { currency: "ETH" },
-    });
+    try {
+      const { data, status } = await axios.get(`${COINBASE_API_ENDPOINT}`, {
+        params: { currency: "ETH" },
+      });
 
-    if (status !== 200) {
-      return setPrice(null);
+      if (status !== 200) {
+        return setPrice(null);
+      }
+
+      const { rates } = data?.data;
+
+      setPrice(rates["USD"]);
+    } catch (err) {
+      console.log("Could not fetch ETH price from Coinbase's API.");
+      return;
     }
-
-    const { rates } = data?.data;
-    setPrice(rates["USD"]);
   };
 
   // Convert USD to ETH
   const usdToEth = (amount: number) => {
-    const ETH = price! / amount;
-    setResult(ETH);
+    const ETH = parseFloat(price!) / amount;
+    setResult(ETH.toString());
   };
 
   // Convert ETH to USD
   const ethToUsd = (amount: number) => {
-    const USD = amount * price!;
-    setResult(USD);
+    const USD = amount * parseFloat(price!);
+    setResult(USD.toString());
   };
 
   useEffect(() => {

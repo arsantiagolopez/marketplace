@@ -1,48 +1,61 @@
+import axios from "axios";
 import React, { FC, useState } from "react";
 import { useForm, UseFormRegisterReturn } from "react-hook-form";
 import { CgCheck } from "react-icons/cg";
 import { IoCloseSharp } from "react-icons/io5";
 import { RiLoader4Line } from "react-icons/ri";
+import { ItemEntity } from "../../types";
+import { getPriceData } from "../../utils/getPriceData";
+import { useEthPrice } from "../../utils/useEthPrice";
 import { CompletedCheck } from "../CompletedCheck";
+import { PriceCurrencyField } from "../PriceCurrencyField";
 import { Tooltip } from "../Tooltip";
 import { ItemsSelect } from "./ItemsSelect";
 import { Preview } from "./Preview";
-import { PriceCurrencyField } from "./PriceCurrencyField";
-
-interface Props {}
 
 interface FormData {
   name: string;
-  description: string;
   price: number;
   image: string;
+  description: string;
   items: string[];
 }
 
-const CreateListing: FC<Props> = () => {
+interface Props {
+  items?: ItemEntity[];
+}
+
+const CreateListing: FC<Props> = ({ items }) => {
   const [currency, setCurrency] = useState<string>("USD");
-  const [items, setItems] = useState<string[] | null>(null);
+  const [selectItemIds, setSelectItemIds] = useState<string[] | null>(null);
   const [validImageField, setValidImageField] = useState<boolean>(false);
 
-  const { handleSubmit, register, watch } = useForm<FormData>();
+  const { price: ethRate } = useEthPrice();
+
+  const { handleSubmit, register, watch, setValue } = useForm<FormData>();
 
   // Handle submit
-  // const onSubmit = async ({
-  //   name,
-  //   description,
-  //   price,
-  //   image,
-  //   items,
-  // }: FormData) => {
   const onSubmit = async (values: FormData) => {
-    console.log(values);
-    // // Create seller profile
-    // if (store) {
-    //   await axios.post("/api/sellers", { name: store });
-    // }
-    // // Update user
-    // await axios.put("/api/users/", { name, isSeller: !!store });
-    // setOnSuccess(true);
+    const { price, ...rest } = values;
+
+    if (!ethRate) {
+      console.log(
+        "ETH price could not be fetched. Listing won't be created. Try again later."
+      );
+      return;
+    }
+
+    // Get prices formatted for db
+    const prices = getPriceData({ currency, inputPrice: price, ethRate });
+
+    // Create listing
+    const { data, status } = await axios.post("/api/listings", {
+      ...rest,
+      items: items ?? [],
+      prices,
+    });
+
+    console.log(data, status);
   };
 
   // Form fields registration
@@ -58,7 +71,6 @@ const CreateListing: FC<Props> = () => {
   const descriptionRegister: UseFormRegisterReturn = register("description", {
     required: "A description for your listing is required.",
   });
-  const itemsRegister: UseFormRegisterReturn = register("items");
 
   const validNameField = !!(watch("name") && watch("name").length > 2);
   const validPriceField = watch("price") > 0;
@@ -79,21 +91,29 @@ const CreateListing: FC<Props> = () => {
     validPriceField,
     currency,
     setCurrency,
+    ethRate,
+    setValue,
   };
-  const itemsSelectProps = { items, setItems, itemsRegister };
+  const itemsSelectProps = { items, selectItemIds, setSelectItemIds };
   const previewProps = {
     watch,
     currency,
     validImageField,
     setValidImageField,
+    items,
+    selectItemIds,
   };
 
   return (
-    <div className="flex flex-row md:grid md:grid-cols-2 md:gap-[2%] min-h-[calc(100vh-5rem)]">
+    <div className="flex flex-row md:grid md:grid-cols-2 min-h-[calc(100vh-5rem)] px-6 md:px-0">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col items-center px-6 md:pl-[40%] w-full py-10 md:py-12"
+        className="flex flex-col items-center w-full md:pl-[30%] md:pr-[10%] py-[10%]"
       >
+        <h1 className="text-4xl md:text-6xl font-Basic tracking-tighter self-start mb-12 md:mb-8">
+          Create a Listing.
+        </h1>
+
         {/* Name */}
         <div className="form-field w-full md:py-3">
           <h1 className="title">Give your listing a name.</h1>
@@ -169,7 +189,7 @@ const CreateListing: FC<Props> = () => {
           <ItemsSelect {...itemsSelectProps} />
         </div>
 
-        {/* Complete listing */}
+        {/* Create Listing */}
         <button
           type="submit"
           disabled={!isCompleted}
@@ -187,8 +207,8 @@ const CreateListing: FC<Props> = () => {
         </button>
       </form>
 
-      {/* Desktop preview */}
-      <div className="hidden md:flex flex-col sticky top-20 self-start w-full h-[calc(100vh-5rem)] px-6 md:pr-[30%]">
+      {/* Desktop Preview */}
+      <div className="hidden md:flex flex-col sticky top-20 w-full h-[calc(100vh-5rem)]">
         <Preview {...previewProps} />
       </div>
     </div>

@@ -50,7 +50,7 @@ const SignIn: FC<Props> = () => {
       </div>
 
       <h1 className="font-Basic text-2xl tracking-tight mb-2">
-        You know the drill
+        You know what to do
       </h1>
 
       <ConnectMetamask

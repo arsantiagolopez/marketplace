@@ -1,6 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { UserEntity } from "../../../types";
-import { getUserId } from "../../../utils/getUserId";
+import {
+  ItemPriceEntity,
+  ListingEntity,
+  ListingItemEntity,
+  ListingPriceEntity,
+} from "../../../types";
+import { getUserSessionAndId } from "../../../utils/getUserSessionAndId";
 import { Supabase } from "../../../utils/supabase";
 
 /**
@@ -11,9 +16,11 @@ import { Supabase } from "../../../utils/supabase";
 const getMyListings = async (
   req: NextApiRequest,
   res: NextApiResponse
-): Promise<UserEntity | void> => {
+): Promise<ListingEntity[] | null | void> => {
+  let listings: ListingEntity[] = [];
+
   try {
-    const userId = await getUserId({ req });
+    const { userId } = (await getUserSessionAndId({ req })) || {};
 
     if (!userId) {
       return res.status(400).json({
@@ -21,22 +28,29 @@ const getMyListings = async (
       });
     }
 
-    let { data: user, error } = await Supabase.from<UserEntity>("users")
-      .select("name, walletAddress, isSeller, sellerProfiles(name)")
-      .match({ id: userId })
-      .single();
+    let { data, error } = await Supabase.from<ListingEntity>("listings")
+      .select("*, listingPrices(selectCurrency, usd, eth, lockedEthRate)")
+      .match({ userId });
 
     if (error) {
       return res.status(400).json({ error: error.message });
     }
 
-    const { sellerProfiles, ...rest } = user as any;
-
-    if (sellerProfiles) {
-      user = { ...rest, store: sellerProfiles[0].name };
+    // User does not have any listings
+    if (data && !data.length) {
+      return null;
     }
 
-    return res.status(200).json(user);
+    for (let listing of data!) {
+      const { listingPrices, ...rest } = listing;
+      listing = {
+        ...rest,
+        prices: listingPrices ? listingPrices[0] : undefined,
+      };
+      listings.push(listing);
+    }
+
+    return res.status(200).json(listings);
   } catch (err) {
     return res.status(400).json({ error: err });
   }
@@ -48,24 +62,107 @@ const getMyListings = async (
  * @returns an object of the created listing.
  */
 const createListing = async (
-  { body }: NextApiRequest,
+  req: NextApiRequest,
   res: NextApiResponse
-): Promise<UserEntity | void> => {
-  const { walletAddress, ...fields } = body;
+): Promise<ListingEntity | void> => {
+  const { body } = req;
+  const { items, prices, currency, ...rest } = body;
+
+  let totalPrices: ItemPriceEntity[] = [];
+  let finalListingPrice: ListingPriceEntity | undefined;
 
   try {
-    const { data: user, error } = await Supabase.from<UserEntity>("users")
-      .insert({
-        walletAddress,
-        ...fields,
-      })
+    const { userId, session } = (await getUserSessionAndId({ req })) || {};
+
+    if (!userId) {
+      return res.status(400).json({
+        error: "Must be authenticated to create a listing.",
+      });
+    }
+
+    if (!session?.user?.isSeller) {
+      return res.status(400).json({
+        error: "Must be a seller to create a listing.",
+      });
+    }
+
+    const { data: listing, error } = await Supabase.from<ListingEntity>(
+      "listings"
+    )
+      .insert({ ...rest, sellerAddress: userId, userId })
       .single();
 
     if (error) {
       return res.status(400).json({ error: error.message });
     }
 
-    return res.status(200).json(user);
+    // ListingItems (many to many)
+    for (const item of items) {
+      const { error } = await Supabase.from<ListingItemEntity>("listingItems")
+        .insert({
+          itemId: item.id,
+          listingId: listing?.id,
+        })
+        .single();
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      // Add item price to total items price
+      totalPrices.push(item.prices);
+    }
+
+    // Calculate final price for listing
+
+    // Get submitted listing price currency and ethRate
+    const {
+      selectCurrency, // Preferred currency on listing submission
+      lockedEthRate, // ETH rate at time of submission
+    } = prices as ListingPriceEntity;
+
+    // Iterate through all prices and sum based on currency and ETH rate
+    finalListingPrice = totalPrices.reduce((accumulator, price) => {
+      let {
+        usd,
+        eth,
+        selectCurrency: itemSelectCurrency,
+      } = price as ItemPriceEntity;
+
+      // Guarantee locked rates on select currencies of items
+      if (itemSelectCurrency === "USD") {
+        eth = (usd / parseFloat(lockedEthRate)).toString();
+      }
+      if (itemSelectCurrency === "ETH") {
+        usd = parseFloat(eth) * parseFloat(lockedEthRate);
+      }
+
+      // Sum with total
+      usd += accumulator.usd;
+      eth = (parseFloat(eth) + parseFloat(accumulator.eth)).toString();
+
+      return {
+        selectCurrency,
+        lockedEthRate,
+        usd,
+        eth,
+      };
+    }, prices);
+
+    const { error: priceError } = await Supabase.from<ListingPriceEntity>(
+      "listingPrices"
+    )
+      .insert({
+        ...finalListingPrice,
+        listingId: listing?.id,
+      })
+      .single();
+
+    if (priceError) {
+      return res.status(400).json({ error: priceError.message });
+    }
+
+    return res.status(200).json(listing);
   } catch (err) {
     return res.status(400).json({ error: err });
   }

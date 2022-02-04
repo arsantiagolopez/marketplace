@@ -45,7 +45,7 @@ const ImageEditable: FC<Props> = ({
 
   return (
     <div
-      className={`flex flex-row items-baseline w-full h-full ${
+      className={`flex items-center w-full h-full ${
         isActiveUpdate && "animate-pulse"
       }`}
     >
@@ -58,14 +58,16 @@ const ImageEditable: FC<Props> = ({
           spellCheck={false}
           suppressContentEditableWarning={true}
           onKeyDown={preventNewLine}
-          className="self-center text-5xl md:text-5xl font-Basic text-primary tracking-tighter bg-transparent caret-black w-full py-0 focus:outline-none truncate empty:before:content-[attr(placeholder)] cursor-text"
+          className={`py-4 w-full truncate text-5xl md:text-5xl font-Basic text-primary tracking-tighter bg-transparent caret-black min-w-[2rem] pr-3 focus:outline-none empty:before:content-[attr(placeholder)] cursor-default ${
+            isActiveUpdate && "cursor-text"
+          }`}
         >
           {editableImage === image ?? image}
         </span>
       ) : (
         <img
           src={image}
-          className="h-full aspect-square rounded-full object-cover shadow-md"
+          className="h-[90%] aspect-square rounded-full object-cover shadow-md"
           onError={handleInvalidUpload}
         />
       )}

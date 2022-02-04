@@ -29,7 +29,9 @@ const Landing: FC<Props> = () => {
             </a>
           </Link>
           <Link href="/signin">
-            <a className="font-Basic tracking-tight text-xl">or Sign in</a>
+            <a className="font-Basic tracking-tight text-xl self-start md:self-center">
+              or Sign in
+            </a>
           </Link>
         </div>
       </div>

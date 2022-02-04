@@ -1,4 +1,10 @@
-import React, { Dispatch, FC, SetStateAction } from "react";
+import React, {
+  ChangeEventHandler,
+  Dispatch,
+  FC,
+  SetStateAction,
+  useState,
+} from "react";
 import { UseFormRegisterReturn } from "react-hook-form";
 import { CgArrowsExchangeAltV } from "react-icons/cg";
 
@@ -7,6 +13,8 @@ interface Props {
   validPriceField: boolean;
   currency: string;
   setCurrency: Dispatch<SetStateAction<string>>;
+  ethRate: string | null;
+  setValue: any;
 }
 
 const PriceCurrencyField: FC<Props> = ({
@@ -14,12 +22,35 @@ const PriceCurrencyField: FC<Props> = ({
   validPriceField,
   currency,
   setCurrency,
+  ethRate,
+  setValue,
 }) => {
+  const [price, setPrice] = useState<string>("");
+
+  const { onChange, ...restRegister } = priceRegister;
+
+  const handleChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+    let { value } = event.target;
+    setPrice(value);
+    onChange(event);
+  };
+
   const handleExchange = () => {
-    if (currency === "USD") {
-      setCurrency("ETH");
+    let updated: string = "";
+
+    if (ethRate) {
+      if (currency === "USD") {
+        updated = (parseFloat(price) / parseFloat(ethRate)).toString();
+        setCurrency("ETH");
+      } else {
+        updated = (parseFloat(price) * parseFloat(ethRate)).toString();
+        setCurrency("USD");
+      }
+      setPrice(updated);
+      // Update form value dynamically
+      setValue("price", parseFloat(updated));
     } else {
-      setCurrency("USD");
+      console.log("ETH Price could not be fetched.");
     }
   };
 
@@ -40,14 +71,17 @@ const PriceCurrencyField: FC<Props> = ({
       <div className="relative flex flex-row items-center w-full">
         <input
           type="number"
+          step="0.000001"
           autoComplete="off"
+          value={price}
+          onChange={handleChange}
           className={`relative w-full py-2 md:py-2 pl-3 my-2 md:my-4 text-left bg-white rounded-lg shadow-md focus:outline-black ${
             !validPriceField && "animate-pulse"
           }`}
           placeholder={currency === "USD" ? "$25.00" : "0.00036 ETH"}
-          {...priceRegister}
+          {...restRegister}
         />
-        <button className="absolute right-1">
+        <button type="button" className="absolute right-1">
           <CgArrowsExchangeAltV
             onClick={handleExchange}
             className={`text-3xl hover:text-primary ${

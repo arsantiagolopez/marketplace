@@ -109,7 +109,7 @@ const ListingTemplate: FC<Props> = ({ seller, listing }) => {
     },
   ];
 
-  const priceTagProps = { price };
+  const priceTagProps = { price, isListing: true };
 
   return (
     <div className="relative flex flex-col md:justify-center min-h-screen bg-white mt-[-4rem] md:mt-[-5rem] pt-16 md:pt-20">
@@ -184,7 +184,11 @@ const ListingTemplate: FC<Props> = ({ seller, listing }) => {
               Panel={
                 <div className="flex flex-nowrap items-center space-x-2 overflow-x-scroll px-0 md:pb-10 md:mx-[-1.25rem] md:px-5">
                   {items.map(({ id, name, image, price }) => (
-                    <Tooltip label={`${name} (+$${price})`}>
+                    <Tooltip
+                      label={`${name} (+$${price})`}
+                      position="center"
+                      fitWidth
+                    >
                       <div className="tooltip tooltip-bottom text-tertiary cursor-pointer hover:opacity-80">
                         <img
                           key={id}

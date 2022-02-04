@@ -10,7 +10,7 @@ import React, {
 } from "react";
 import { CgCheck } from "react-icons/cg";
 import { GoPrimitiveDot } from "react-icons/go";
-import { IoCloseSharp } from "react-icons/io5";
+import { IoLogOut } from "react-icons/io5";
 import { MdEdit } from "react-icons/md";
 import { KeyedMutator } from "swr";
 import { UserEntity } from "../../types";
@@ -130,8 +130,8 @@ const EditProfileButton: FC<Props> = ({
                       value={shortAddress}
                       className="relative w-full py-1 md:py-1 pl-3 my-1 md:my-2 text-left rounded-md focus:outline-black border border-tertiary text-secondary"
                     />
-                    <button onClick={handleLogout} className="absolute right-2">
-                      <IoCloseSharp className="text-red-500 text-xl" />
+                    <button onClick={handleLogout} className="absolute right-1">
+                      <IoLogOut className="text-red-600 text-xl" />
                     </button>
                   </div>
                 </div>

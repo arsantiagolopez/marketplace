@@ -1,14 +1,9 @@
 import React, { FC } from "react";
+import { ListingEntity } from "../../types";
 import { CompletedCheck } from "../CompletedCheck";
 
-interface Listing {
-  id: number;
-  image: string;
-  price: number;
-}
-
 interface Props {
-  listings: Listing[];
+  listings?: ListingEntity[];
 }
 
 const Orders: FC<Props> = ({ listings }) => {
@@ -22,7 +17,7 @@ const Orders: FC<Props> = ({ listings }) => {
       </div>
 
       <div className="flex flex-col space-y-3 min-h-[32rem] max-h-[32rem] overflow-scroll mx-4 md:mx-20 my-8 text-secondary">
-        {listings.map(({ id, image }) => (
+        {listings?.map(({ id, image }) => (
           <div
             key={id}
             className="flex flex-row items-center w-full hover:bg-gray-50 rounded-xl"

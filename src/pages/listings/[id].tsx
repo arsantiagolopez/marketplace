@@ -18,7 +18,7 @@ const ListingPage: NextPage = () => {
     description: "Delicious saucy steak from the Gods.",
     image:
       "https://images.pexels.com/photos/1005417/pexels-photo-1005417.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500",
-    seller: "0x73421323hj2nhdjaknsd23x097adwawm920",
+    sellerAddress: "0x73421323hj2nhdjaknsd23x097adwawm920",
     items: [],
     userId: "somebodythatiusedtoknow",
     tokenId: 1,
@@ -26,7 +26,7 @@ const ListingPage: NextPage = () => {
     createdAt: new Date(),
   };
 
-  const listingTemplateProps = { seller: listing.seller, listing };
+  const listingTemplateProps = { seller: listing.sellerAddress, listing };
 
   return (
     <>

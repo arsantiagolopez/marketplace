@@ -1,12 +1,18 @@
 import Head from "next/head";
 import React from "react";
+import useSWR from "swr";
 import { Layout } from "../components/Layout";
 import { SellerDashboard } from "../components/SellerDashboard";
-import { ProtectedPage } from "../types";
+import { ItemEntity, ListingEntity, ProtectedPage } from "../types";
 
 interface Props {}
 
 const DashboardPage: ProtectedPage<Props> = () => {
+  const { data: listings } = useSWR<ListingEntity[]>("/api/listings");
+  const { data: items } = useSWR<ItemEntity[]>("/api/items");
+
+  const sellerDashboardProps = { listings, items };
+
   return (
     <>
       <Head>
@@ -14,7 +20,7 @@ const DashboardPage: ProtectedPage<Props> = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
-        <SellerDashboard />
+        <SellerDashboard {...sellerDashboardProps} />
       </Layout>
     </>
   );

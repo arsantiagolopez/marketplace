@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { SellerProfileEntity } from "../../../types";
-import { getUserId } from "../../../utils/getUserId";
+import { getUserSessionAndId } from "../../../utils/getUserSessionAndId";
 import { Supabase } from "../../../utils/supabase";
 
 /**
@@ -148,7 +148,7 @@ const updateSellerProfile = async (
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { method } = req;
 
-  const userId = await getUserId({ req });
+  const { userId } = (await getUserSessionAndId({ req })) || {};
 
   if (!userId) {
     return res.status(400).json({

@@ -1,10 +1,15 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import React from "react";
+import useSWR from "swr";
 import { CreateItem } from "../../components/CreateItem";
 import { Layout } from "../../components/Layout";
 
 const CreateItemPage: NextPage = () => {
+  const { data: items } = useSWR("/api/items");
+
+  const createItemProps = { items };
+
   return (
     <>
       <Head>
@@ -12,7 +17,7 @@ const CreateItemPage: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
-        <CreateItem />
+        <CreateItem {...createItemProps} />
       </Layout>
     </>
   );
