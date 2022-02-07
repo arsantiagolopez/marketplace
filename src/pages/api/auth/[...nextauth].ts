@@ -51,17 +51,19 @@ export default NextAuth({
     session: async ({ session }) => {
       let user;
 
-      const { data } = await Supabase.from("users")
-        .select("walletAddress, name, isSeller, sellerProfiles(name)")
+      const { data } = await Supabase.from<UserEntity>("users")
+        .select(
+          "walletAddress, name, isSeller, sellerProfile: sellerProfiles(name)"
+        )
         .single();
 
-      const { sellerProfiles, ...rest } = data || {};
+      const { sellerProfile, ...rest } = data as any;
 
       user = { ...rest };
 
       // Include store name if isSeller
       if (data?.isSeller) {
-        const { name } = sellerProfiles[0];
+        const { name } = sellerProfile[0];
         user = { ...rest, store: name };
       }
 

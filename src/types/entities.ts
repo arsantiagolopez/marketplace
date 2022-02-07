@@ -5,6 +5,7 @@ export interface UserEntity {
   signature?: string;
   isSeller: boolean;
   createdAt: Date;
+  sellerProfile?: SellerProfileEntity;
 }
 
 export interface SellerProfileEntity {
@@ -24,11 +25,10 @@ export interface ListingEntity {
   sellerAddress: string;
   tokenContract: string;
   tokenId: number;
-  items: ItemEntity[];
   createdAt: Date;
   userId: string;
-  listingPrices?: ListingPriceEntity[];
-  prices?: ListingPriceEntity;
+  price?: ListingPriceEntity;
+  items?: ItemEntity[];
 }
 
 export interface ItemEntity {
@@ -37,8 +37,7 @@ export interface ItemEntity {
   image: string;
   createdAt: Date;
   userId: string;
-  itemPrices?: ItemPriceEntity[];
-  prices?: ItemPriceEntity;
+  price?: ItemPriceEntity;
 }
 
 export interface ListingItemEntity {

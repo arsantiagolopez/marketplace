@@ -1,13 +1,16 @@
 import axios from "axios";
-import React, { FC, useState } from "react";
+import React, { FC, useContext, useState } from "react";
 import { useForm, UseFormRegisterReturn } from "react-hook-form";
 import { CgCheck } from "react-icons/cg";
 import { IoCloseSharp } from "react-icons/io5";
 import { RiLoader4Line } from "react-icons/ri";
-import { ItemEntity } from "../../types";
+import { KeyedMutator } from "swr";
+import { PreferencesContext } from "../../context/PreferencesContext";
+import { ItemEntity, ListingEntity } from "../../types";
 import { getPriceData } from "../../utils/getPriceData";
 import { useEthPrice } from "../../utils/useEthPrice";
 import { CompletedCheck } from "../CompletedCheck";
+import { Dialog } from "../Dialog";
 import { PriceCurrencyField } from "../PriceCurrencyField";
 import { Tooltip } from "../Tooltip";
 import { ItemsSelect } from "./ItemsSelect";
@@ -23,20 +26,29 @@ interface FormData {
 
 interface Props {
   items?: ItemEntity[];
+  listings?: ListingEntity[];
+  mutate: KeyedMutator<ListingEntity[]>;
 }
 
-const CreateListing: FC<Props> = ({ items }) => {
-  const [currency, setCurrency] = useState<string>("USD");
+const CreateListing: FC<Props> = ({ items, listings, mutate }) => {
+  const [onSuccess, setOnSuccess] = useState<boolean>(false);
   const [selectItemIds, setSelectItemIds] = useState<string[] | null>(null);
   const [validImageField, setValidImageField] = useState<boolean>(false);
+
+  const { currency, toggleCurrency } = useContext(PreferencesContext);
 
   const { price: ethRate } = useEthPrice();
 
   const { handleSubmit, register, watch, setValue } = useForm<FormData>();
 
+  const nextListingsCount = listings ? listings?.length + 1 : 1;
+
   // Handle submit
   const onSubmit = async (values: FormData) => {
     const { price, ...rest } = values;
+
+    // Get selected item entities
+    const itemEntities = items?.filter(({ id }) => selectItemIds?.includes(id));
 
     if (!ethRate) {
       console.log(
@@ -51,9 +63,16 @@ const CreateListing: FC<Props> = ({ items }) => {
     // Create listing
     const { data, status } = await axios.post("/api/listings", {
       ...rest,
-      items: items ?? [],
+      items: itemEntities ?? [],
       prices,
     });
+
+    if (status !== 200) {
+      return setOnSuccess(false);
+    }
+
+    mutate([...[listings], data]);
+    setOnSuccess(true);
 
     console.log(data, status);
   };
@@ -90,7 +109,7 @@ const CreateListing: FC<Props> = ({ items }) => {
     priceRegister,
     validPriceField,
     currency,
-    setCurrency,
+    toggleCurrency,
     ethRate,
     setValue,
   };
@@ -100,8 +119,12 @@ const CreateListing: FC<Props> = ({ items }) => {
     currency,
     validImageField,
     setValidImageField,
-    items,
-    selectItemIds,
+  };
+  const dialogProps = {
+    isOpen: onSuccess,
+    setIsOpen: setOnSuccess,
+    type: "success",
+    message: "Your listing was created successfully!",
   };
 
   return (
@@ -124,7 +147,7 @@ const CreateListing: FC<Props> = ({ items }) => {
               className={`relative w-full py-2 pl-3 pr-8 my-2 md:my-4 text-left bg-white rounded-lg shadow-md focus:outline-black ${
                 !validNameField && "animate-pulse pr-0"
               }`}
-              placeholder={`My Listing #${1}`} // listings.length
+              placeholder={`My Listing #${nextListingsCount}`}
               {...nameRegister}
             />
             {validNameField && (
@@ -211,6 +234,9 @@ const CreateListing: FC<Props> = ({ items }) => {
       <div className="hidden md:flex flex-col sticky top-20 w-full h-[calc(100vh-5rem)]">
         <Preview {...previewProps} />
       </div>
+
+      {/* Success/failure Modal */}
+      <Dialog {...dialogProps} />
     </div>
   );
 };

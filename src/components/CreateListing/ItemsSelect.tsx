@@ -1,4 +1,5 @@
 import { Disclosure, RadioGroup, Transition } from "@headlessui/react";
+import Link from "next/link";
 import React, { Dispatch, FC, SetStateAction } from "react";
 import { CgCheck } from "react-icons/cg";
 import { GoCheck } from "react-icons/go";
@@ -26,7 +27,7 @@ const ItemsSelect: FC<Props> = ({ items, selectItemIds, setSelectItemIds }) => {
   const handleSelectAll = () => setSelectItemIds(null);
 
   return (
-    <div className="flex flex-col items-center w-full">
+    <div className="flex flex-col items-start w-full">
       <Disclosure>
         {/* Title */}
         <div className="flex flex-row items-baseline justify-between w-full">
@@ -77,25 +78,42 @@ const ItemsSelect: FC<Props> = ({ items, selectItemIds, setSelectItemIds }) => {
           leaveFrom="transform scale-100 opacity-100"
           leaveTo="transform scale-95 opacity-0"
         >
-          <Disclosure.Panel className="py-4">
-            <div className="grid grid-cols-3 gap-3 overflow-scroll max-h-[60vh]">
-              {items?.map(({ id, image }) => (
-                <div
-                  key={id}
-                  onClick={() => handleSelectItem(id)}
-                  className="relative flex justify-center items-center rounded-lg aspect-square w-full cursor-pointer shadow-lg hover:opacity-90 overflow-hidden"
-                >
-                  <img
-                    src={image}
-                    className={`h-full w-full object-cover ${
-                      selectItemIds?.includes(id) && "brightness-[30%]"
-                    }`}
-                  />
-                  {selectItemIds?.includes(id) && (
-                    <CgCheck className="z-10 absolute text-white text-7xl pointer-events-none animate-pulse" />
-                  )}
+          <Disclosure.Panel className="w-full">
+            <div
+              className={`w-full overflow-scroll max-h-[60vh] ${
+                items ? "grid grid-cols-3 gap-3 py-4" : "pt-4"
+              }`}
+            >
+              {items ? (
+                items.map(({ id, image }) => (
+                  <div
+                    key={id}
+                    onClick={() => handleSelectItem(id)}
+                    className="relative flex justify-center items-center rounded-lg aspect-square w-full cursor-pointer shadow-lg hover:opacity-90 overflow-hidden"
+                  >
+                    <img
+                      src={image}
+                      className={`h-full w-full object-cover ${
+                        selectItemIds?.includes(id) && "brightness-[30%]"
+                      }`}
+                    />
+                    {selectItemIds?.includes(id) && (
+                      <CgCheck className="z-10 absolute text-white text-7xl pointer-events-none animate-pulse" />
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="w-full">
+                  <p className="text-tertiary w-full">
+                    You haven't created any items yet.{" "}
+                    <Link href="/items/create">
+                      <span className="cursor-pointer hover:underline">
+                        Create one here
+                      </span>
+                    </Link>
+                  </p>
                 </div>
-              ))}
+              )}
             </div>
           </Disclosure.Panel>
         </Transition>

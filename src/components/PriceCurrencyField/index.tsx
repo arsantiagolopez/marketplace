@@ -1,10 +1,4 @@
-import React, {
-  ChangeEventHandler,
-  Dispatch,
-  FC,
-  SetStateAction,
-  useState,
-} from "react";
+import React, { ChangeEventHandler, FC, useState } from "react";
 import { UseFormRegisterReturn } from "react-hook-form";
 import { CgArrowsExchangeAltV } from "react-icons/cg";
 
@@ -12,7 +6,7 @@ interface Props {
   priceRegister: UseFormRegisterReturn;
   validPriceField: boolean;
   currency: string;
-  setCurrency: Dispatch<SetStateAction<string>>;
+  toggleCurrency: () => void;
   ethRate: string | null;
   setValue: any;
 }
@@ -21,7 +15,7 @@ const PriceCurrencyField: FC<Props> = ({
   priceRegister,
   validPriceField,
   currency,
-  setCurrency,
+  toggleCurrency,
   ethRate,
   setValue,
 }) => {
@@ -41,11 +35,10 @@ const PriceCurrencyField: FC<Props> = ({
     if (ethRate) {
       if (currency === "USD") {
         updated = (parseFloat(price) / parseFloat(ethRate)).toString();
-        setCurrency("ETH");
       } else {
         updated = (parseFloat(price) * parseFloat(ethRate)).toString();
-        setCurrency("USD");
       }
+      toggleCurrency();
       setPrice(updated);
       // Update form value dynamically
       setValue("price", parseFloat(updated));

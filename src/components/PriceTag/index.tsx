@@ -4,7 +4,7 @@ import { ItemEntity } from "../../types";
 import { getSecretEmoji } from "../../utils/getSecretEmoji";
 
 interface Props {
-  price: number;
+  price?: number | string;
   currency: string;
   isListing?: boolean;
   items?: ItemEntity[];
@@ -35,10 +35,10 @@ const PriceTag: FC<Props> = ({
       : price.toString());
 
   const formattedPrice =
-    currency === "USD"
-      ? getFormattedUsd(price)
+    price && currency === "USD"
+      ? getFormattedUsd(Number(price))
       : currency === "ETH"
-      ? getFormattedEth(price)
+      ? getFormattedEth(Number(price))
       : null;
 
   // Only allow toggle for listings
@@ -91,8 +91,8 @@ const PriceTag: FC<Props> = ({
       <div className="items-center h-full w-full truncate">
         {isExpanded && (
           <div className="flex items-center w-full h-full pl-3 pr-1 overflow-x-scroll">
-            {itemsSelected?.map(({ id, name, prices }, index) => {
-              const { usd, eth } = prices || {};
+            {itemsSelected?.map(({ id, name, price }, index) => {
+              const { usd, eth } = price || {};
 
               const roundedEth = eth ? parseFloat(eth).toFixed(5) : "";
 

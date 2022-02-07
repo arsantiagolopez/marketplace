@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import {
-  ItemPriceEntity,
   ListingEntity,
   ListingItemEntity,
   ListingPriceEntity,
@@ -29,7 +28,9 @@ const getMyListings = async (
     }
 
     let { data, error } = await Supabase.from<ListingEntity>("listings")
-      .select("*, listingPrices(selectCurrency, usd, eth, lockedEthRate)")
+      .select(
+        `*, price: listingPrices(selectCurrency, usd, eth, lockedEthRate)`
+      )
       .match({ userId });
 
     if (error) {
@@ -41,13 +42,12 @@ const getMyListings = async (
       return null;
     }
 
-    for (let listing of data!) {
-      const { listingPrices, ...rest } = listing;
-      listing = {
-        ...rest,
-        prices: listingPrices ? listingPrices[0] : undefined,
-      };
-      listings.push(listing);
+    if (data) {
+      for (let listing of data!) {
+        const { price, ...rest } = listing as any;
+        listing = { ...rest, price: price[0] };
+        listings.push(listing);
+      }
     }
 
     return res.status(200).json(listings);
@@ -66,10 +66,7 @@ const createListing = async (
   res: NextApiResponse
 ): Promise<ListingEntity | void> => {
   const { body } = req;
-  const { items, prices, currency, ...rest } = body;
-
-  let totalPrices: ItemPriceEntity[] = [];
-  let finalListingPrice: ListingPriceEntity | undefined;
+  let { items, prices, currency, ...rest } = body;
 
   try {
     const { userId, session } = (await getUserSessionAndId({ req })) || {};
@@ -86,17 +83,29 @@ const createListing = async (
       });
     }
 
+    // Create listing entity
     const { data: listing, error } = await Supabase.from<ListingEntity>(
       "listings"
     )
-      .insert({ ...rest, sellerAddress: userId, userId })
+      .insert({ ...rest, sellerAddress: session?.user?.walletAddress, userId })
       .single();
 
     if (error) {
       return res.status(400).json({ error: error.message });
     }
 
-    // ListingItems (many to many)
+    // Create listingPrice entity
+    const { error: priceError } = await Supabase.from<ListingPriceEntity>(
+      "listingPrices"
+    )
+      .insert({ ...prices, listingId: listing?.id })
+      .single();
+
+    if (priceError) {
+      return res.status(400).json({ error: priceError.message });
+    }
+
+    // Create listingItem entities, if any selected
     for (const item of items) {
       const { error } = await Supabase.from<ListingItemEntity>("listingItems")
         .insert({
@@ -108,62 +117,11 @@ const createListing = async (
       if (error) {
         return res.status(400).json({ error: error.message });
       }
-
-      // Add item price to total items price
-      totalPrices.push(item.prices);
-    }
-
-    // Calculate final price for listing
-
-    // Get submitted listing price currency and ethRate
-    const {
-      selectCurrency, // Preferred currency on listing submission
-      lockedEthRate, // ETH rate at time of submission
-    } = prices as ListingPriceEntity;
-
-    // Iterate through all prices and sum based on currency and ETH rate
-    finalListingPrice = totalPrices.reduce((accumulator, price) => {
-      let {
-        usd,
-        eth,
-        selectCurrency: itemSelectCurrency,
-      } = price as ItemPriceEntity;
-
-      // Guarantee locked rates on select currencies of items
-      if (itemSelectCurrency === "USD") {
-        eth = (usd / parseFloat(lockedEthRate)).toString();
-      }
-      if (itemSelectCurrency === "ETH") {
-        usd = parseFloat(eth) * parseFloat(lockedEthRate);
-      }
-
-      // Sum with total
-      usd += accumulator.usd;
-      eth = (parseFloat(eth) + parseFloat(accumulator.eth)).toString();
-
-      return {
-        selectCurrency,
-        lockedEthRate,
-        usd,
-        eth,
-      };
-    }, prices);
-
-    const { error: priceError } = await Supabase.from<ListingPriceEntity>(
-      "listingPrices"
-    )
-      .insert({
-        ...finalListingPrice,
-        listingId: listing?.id,
-      })
-      .single();
-
-    if (priceError) {
-      return res.status(400).json({ error: priceError.message });
     }
 
     return res.status(200).json(listing);
   } catch (err) {
+    console.log(err);
     return res.status(400).json({ error: err });
   }
 };

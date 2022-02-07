@@ -76,6 +76,7 @@ const createSellerProfile = async (
         .single();
       profile = data;
     }
+
     // Update my seller profile
     else {
       const { data: sellerProfile } = await Supabase.from<SellerProfileEntity>(

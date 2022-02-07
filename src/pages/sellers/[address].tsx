@@ -9,7 +9,7 @@ import { SellerProfileEntity } from "../../types";
 
 const SellerPage: NextPage = () => {
   // const { query } = useRouter();
-  // const { data: listing } = useSWR(query?.address && `/api/sellers/${query?.address}`);
+  // const { data: listing } = useSWR<ListingEntity, any>(query?.address && `/api/sellers/${query?.address}`);
 
   const seller: SellerProfileEntity = {
     id: "1",

@@ -1,9 +1,11 @@
 import axios from "axios";
-import React, { FC, useState } from "react";
+import React, { FC, useContext, useState } from "react";
 import { useForm, UseFormRegisterReturn } from "react-hook-form";
 import { CgCheck } from "react-icons/cg";
 import { IoCloseSharp } from "react-icons/io5";
 import { RiLoader4Line } from "react-icons/ri";
+import { KeyedMutator } from "swr";
+import { PreferencesContext } from "../../context/PreferencesContext";
 import { ItemEntity } from "../../types";
 import { getPriceData } from "../../utils/getPriceData";
 import { useEthPrice } from "../../utils/useEthPrice";
@@ -20,19 +22,21 @@ interface FormData {
 }
 
 interface Props {
-  items: ItemEntity[];
+  items?: ItemEntity[];
+  mutate: KeyedMutator<ItemEntity[]>;
 }
 
-const CreateItem: FC<Props> = ({ items }) => {
+const CreateItem: FC<Props> = ({ items, mutate }) => {
   const [onSuccess, setOnSuccess] = useState<boolean>(false);
-  const [currency, setCurrency] = useState<string>("USD");
   const [validImageField, setValidImageField] = useState<boolean>(false);
+
+  const { currency, toggleCurrency } = useContext(PreferencesContext);
 
   const { price: ethRate } = useEthPrice();
 
   const { handleSubmit, register, watch, setValue } = useForm<FormData>();
 
-  const nextItemNumber = items ? items?.length + 1 : 1;
+  const nextItemsCount = items ? items?.length + 1 : 1;
 
   // Handle submit
   const onSubmit = async (values: FormData) => {
@@ -58,6 +62,7 @@ const CreateItem: FC<Props> = ({ items }) => {
       return setOnSuccess(false);
     }
 
+    mutate([...[items], data]);
     setOnSuccess(true);
   };
 
@@ -85,7 +90,7 @@ const CreateItem: FC<Props> = ({ items }) => {
     priceRegister,
     validPriceField,
     currency,
-    setCurrency,
+    toggleCurrency,
     ethRate,
     setValue,
   };
@@ -125,7 +130,7 @@ const CreateItem: FC<Props> = ({ items }) => {
               className={`relative w-full py-2 pl-3 pr-8 my-2 md:my-4 text-left bg-white rounded-lg shadow-md focus:outline-black ${
                 !validNameField && "animate-pulse pr-0"
               }`}
-              placeholder={`My Item #${nextItemNumber}`}
+              placeholder={`My Item #${nextItemsCount}`}
               {...nameRegister}
             />
             {validNameField && (

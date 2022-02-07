@@ -15,7 +15,7 @@ const Dropdown: FC<Props> = ({ Button, Panel }) => (
           <Disclosure.Button className="flex flex-row justify-between items-center">
             {Button}
             <IoChevronDownSharp
-              className={`transition-transform duration-300 ${
+              className={`transition-transform duration-300  ${
                 open ? "transform -rotate-180" : ""
               }`}
             />

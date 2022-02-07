@@ -5,14 +5,16 @@ import React, {
   Dispatch,
   FC,
   SetStateAction,
+  useContext,
   useEffect,
   useState,
 } from "react";
-import { CgCheck } from "react-icons/cg";
+import { CgArrowsExchangeAltV, CgCheck } from "react-icons/cg";
 import { GoPrimitiveDot } from "react-icons/go";
 import { IoLogOut } from "react-icons/io5";
 import { MdEdit } from "react-icons/md";
 import { KeyedMutator } from "swr";
+import { PreferencesContext } from "../../context/PreferencesContext";
 import { UserEntity } from "../../types";
 
 interface Props {
@@ -30,6 +32,8 @@ const EditProfileButton: FC<Props> = ({
 }) => {
   const [nameInput, setNameInput] = useState<string>(name || "");
   const [active, setActive] = useState<string | null>(null);
+
+  const { currency, toggleCurrency } = useContext(PreferencesContext);
 
   const [firstName] = name?.split(" ")!;
 
@@ -100,7 +104,7 @@ const EditProfileButton: FC<Props> = ({
           </Popover.Button>
 
           {open && (
-            <Popover.Panel className="absolute z-10 right-0 top-10 w-56">
+            <Popover.Panel className="absolute z-10 right-0 top-10 w-64">
               <div className="flex flex-col w-full bg-white rounded-md py-3 px-4 shadow-lg text-secondary text-sm ">
                 <div className="flex flex-col w-full">
                   <p className="font-medium">My name</p>
@@ -131,7 +135,31 @@ const EditProfileButton: FC<Props> = ({
                       className="relative w-full py-1 md:py-1 pl-3 my-1 md:my-2 text-left rounded-md focus:outline-black border border-tertiary text-secondary"
                     />
                     <button onClick={handleLogout} className="absolute right-1">
-                      <IoLogOut className="text-red-600 text-xl" />
+                      <IoLogOut className="text-red-600 text-xl hover:text-red-800" />
+                    </button>
+                  </div>
+
+                  <p className="font-medium mt-1">Connected account</p>
+                  <div
+                    onClick={toggleCurrency}
+                    className="relative flex flex-row items-center cursor-pointer group"
+                  >
+                    <input
+                      disabled={true}
+                      value={
+                        currency === "USD" ? "Dollars (USD)" : "Ethereum (ETH)"
+                      }
+                      className="relative w-full py-1 md:py-1 pl-3 my-1 md:my-2 text-left rounded-md focus:outline-black border border-tertiary text-secondary"
+                    />
+                    <span className="absolute right-6 inline-block my-1 py-1">
+                      {currency === "USD" ? (
+                        "💵"
+                      ) : (
+                        <img src="/currency/eth.png" className="h-4" />
+                      )}
+                    </span>
+                    <button type="button" className="absolute right-0">
+                      <CgArrowsExchangeAltV className="text-2xl text-gray-300 group-hover:text-primary" />
                     </button>
                   </div>
                 </div>

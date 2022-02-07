@@ -1,10 +1,11 @@
 import Link from "next/link";
 import React, { FC, useState } from "react";
-import { IoCloseSharp, IoMenuSharp } from "react-icons/io5";
 import useSWR from "swr";
+import { UserEntity } from "../../types";
 import { Logo } from "../Logo";
 import { LogoutAlert } from "../LogoutAlert";
 import { EditProfileButton } from "./EditProfileButton";
+import { MobileMenu } from "./MobileMenu";
 
 interface Props {}
 
@@ -12,12 +13,13 @@ const Authenticated: FC<Props> = () => {
   const [isLogoutOpen, setIsLogoutOpen] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
-  const { data: user, mutate } = useSWR("/api/users");
+  const { data: user, mutate } = useSWR<UserEntity, any>("/api/users");
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const { name, walletAddress, isSeller } = user || {};
 
+  const mobileMenuProps = { isMenuOpen, setIsMenuOpen };
   const editProfileButtonProps = {
     name,
     walletAddress,
@@ -27,26 +29,25 @@ const Authenticated: FC<Props> = () => {
   const logoutAlertProps = { isOpen: isLogoutOpen, setIsOpen: setIsLogoutOpen };
 
   return (
-    <div className="fixed z-50 bg-white flex items-center justify-between h-16 md:h-20 w-screen shadow-lg shadow-gray-100 px-6">
+    <div
+      className={`fixed z-50 flex items-center justify-between h-16 md:h-20 w-screen px-6 transition-all duration-200 ease-in-out ${
+        isMenuOpen ? "bg-none" : "bg-white shadow-lg shadow-gray-100"
+      }`}
+    >
       {/* Left */}
-      <div className="flex flex-row h-full items-center">
+      <div className="z-50 flex flex-row h-full items-center">
         <>
           <div className="relative aspect-square h-1/2 w-auto mr-3">
             <Logo />
           </div>
           <h1 className="text-xl font-Basic text-primary">Tri Payments</h1>
         </>
-        <div className="mx-10">
+        <div className="hidden md:flex md:mx-10">
           <Link href="/explore">
             <button className="font-Basic text-primary mx-4">Explore</button>
           </Link>
-          <Link href="/how">
-            <button className="font-Basic text-primary mx-4">
-              How it works
-            </button>
-          </Link>
-          <Link href="/items">
-            <button className="font-Basic text-primary mx-4">My items</button>
+          <Link href="/tokens">
+            <button className="font-Basic text-primary mx-4">My tokens</button>
           </Link>
         </div>
       </div>
@@ -55,7 +56,7 @@ const Authenticated: FC<Props> = () => {
       <div className="flex flex-row ml-auto">
         {/* Mobile only menu */}
         <button onClick={toggleMenu} className="md:hidden text-3xl">
-          {isMenuOpen ? <IoCloseSharp /> : <IoMenuSharp />}
+          <MobileMenu {...mobileMenuProps} />
         </button>
 
         <div className="hidden md:flex flex-row h-full items-center mx-6">

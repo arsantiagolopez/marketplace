@@ -18,8 +18,10 @@ const SellerDashboard: FC<Props> = ({ listings, items }) => {
   const [editableStoreName, setEditableStoreName] = useState<string>("");
   const [editableImage, setEditableImage] = useState<string>("");
 
-  const { data: sellerProfile, mutate } = useSWR("/api/sellers");
-  const { name: store, image }: SellerProfileEntity = sellerProfile || {};
+  const { data: sellerProfile, mutate } = useSWR<SellerProfileEntity, any>(
+    "/api/sellers"
+  );
+  const { name: store, image } = sellerProfile || {};
 
   const dataHasChanged = editableStoreName !== "" || editableImage !== "";
 

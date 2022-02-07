@@ -67,7 +67,7 @@ const Dialog: FC<Props> = ({
 
             <HeadlessDialog.Title
               as="h3"
-              className="font-Basic text-2xl md:text-3xl laeding-tight md:leading-normal tracking-tight text-primary"
+              className="font-Basic text-2xl md:text-3xl leading-tight md:leading-normal tracking-tight text-primary"
             >
               {title}
             </HeadlessDialog.Title>

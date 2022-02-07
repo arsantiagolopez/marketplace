@@ -18,7 +18,7 @@ interface Props {
   setEditableStoreName: Dispatch<SetStateAction<string>>;
   handleCancel: () => void;
   handleSave: () => void;
-  store: string;
+  store?: string;
   dataHasChanged: boolean;
 }
 

@@ -109,7 +109,7 @@ const Marketplace: FC<Props> = () => {
                 key={id}
                 className="flex flex-col w-full text-primary hover:cursor-pointer group hover:animate-pulse"
               >
-                <div className="w-full h-80 aspect-square bg-white rounded-lg shadow-lg overflow-hidden">
+                <div className="w-full h-52 md:h-80 aspect-square bg-white rounded-lg shadow-lg overflow-hidden">
                   <img
                     src={image}
                     alt="photo"

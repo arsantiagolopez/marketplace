@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import type { AppProps as NextAppProps } from "next/app";
 import { SWRConfig } from "swr";
 import { ProtectedRoute } from "../components/ProtectedRoute";
+import { PreferencesProvider } from "../context/PreferencesProvider";
 import "../styles/globals.css";
 
 interface IsProtectedProp {
@@ -25,13 +26,15 @@ const MyApp: NextPage<AppProps> = ({
         fetcher: (url) => axios(url).then((res) => res.data),
       }}
     >
-      {Component.isProtected ? (
-        <ProtectedRoute>
+      <PreferencesProvider>
+        {Component.isProtected ? (
+          <ProtectedRoute>
+            <Component {...pageProps} />
+          </ProtectedRoute>
+        ) : (
           <Component {...pageProps} />
-        </ProtectedRoute>
-      ) : (
-        <Component {...pageProps} />
-      )}
+        )}
+      </PreferencesProvider>
     </SWRConfig>
   </SessionProvider>
 );

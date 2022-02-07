@@ -35,9 +35,7 @@ const ImageEditable: FC<Props> = ({
   };
 
   // Set default invalid placeholder img on failed upload
-  const handleInvalidUpload: ReactEventHandler<HTMLImageElement> | undefined = (
-    event
-  ) => {
+  const handleInvalidUpload: ReactEventHandler<HTMLImageElement> = (event) => {
     // @ts-ignore
     event.target.src =
       "https://www.shareicon.net/data/2016/08/20/817729_close_395x512.png";

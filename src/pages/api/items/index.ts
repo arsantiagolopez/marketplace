@@ -24,7 +24,7 @@ const getMyItems = async (
     }
 
     let { data, error } = await Supabase.from<ItemEntity>("items")
-      .select("*, itemPrices(selectCurrency, usd, eth, lockedEthRate)")
+      .select(`*, price: itemPrices(selectCurrency, usd, eth, lockedEthRate)`)
       .match({ userId });
 
     if (error) {
@@ -36,10 +36,11 @@ const getMyItems = async (
       return null;
     }
 
-    for (let item of data!) {
-      const { itemPrices, ...rest } = item;
-      item = { ...rest, prices: itemPrices ? itemPrices[0] : undefined };
-      items.push(item);
+    if (data) {
+      items = data.map((item) => {
+        const { price } = item as any;
+        return { ...item, price: price[0] };
+      });
     }
 
     return res.status(200).json(items);

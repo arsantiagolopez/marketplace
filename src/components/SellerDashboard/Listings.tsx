@@ -20,16 +20,16 @@ const Listings: FC<Props> = ({ listings }) => {
 
       <div className="flex w-auto space-x-4 md:space-x-6 flex-nowrap overflow-scroll px-4 md:px-20 pt-8 pb-10">
         <Link href="/listings/create">
-          <div className="rounded-xl flex flex-col items-center h-56 md:h-80 min-w-[10rem] md:min-w-[15rem] justify-center cursor-pointer shadow-xl hover:animate-pulse hover:opacity-90 overflow-hidden group">
+          <div className="rounded-xl flex flex-col items-center h-56 md:h-80 min-w-[10rem] md:min-w-[15rem] justify-center cursor-pointer shadow-lg hover:animate-pulse hover:opacity-90 overflow-hidden group">
             <MdPlaylistAdd className="self-center text-gray-300 text-4xl group-hover:text-primary" />
           </div>
         </Link>
 
-        {listings?.map(({ id, image, prices }) => (
+        {listings?.map(({ id, image, price }) => (
           <Link key={id} href={`/listings/${id}`}>
-            <div className="relative flex flex-row justify-center h-56 md:h-80 w-full max-w-[10rem] md:max-w-[15rem] rounded-xl cursor-pointer shadow-xl hover:animate-pulse hover:opacity-90 overflow-hidden">
+            <div className="relative flex flex-row justify-center h-56 md:h-80 w-full max-w-[10rem] md:max-w-[15rem] min-w-[10rem] md:min-w-[15rem] rounded-xl cursor-pointer shadow-xl hover:animate-pulse hover:opacity-90 overflow-hidden">
               <img src={image} className="h-full w-full object-cover" />
-              <PriceLabel prices={prices} />
+              <PriceLabel price={price} />
             </div>
           </Link>
         ))}

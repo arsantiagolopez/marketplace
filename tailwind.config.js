@@ -18,6 +18,9 @@ module.exports = {
         "spin-slow": "spin 3s linear infinite",
       },
       display: ["group-hover"],
+      boxShadow: {
+        inset: "inset 0 -30vh 30vh -15vh white",
+      },
     },
   },
 };

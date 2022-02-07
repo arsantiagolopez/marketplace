@@ -4,11 +4,12 @@ import React from "react";
 import useSWR from "swr";
 import { CreateItem } from "../../components/CreateItem";
 import { Layout } from "../../components/Layout";
+import { ItemEntity } from "../../types";
 
 const CreateItemPage: NextPage = () => {
-  const { data: items } = useSWR("/api/items");
+  const { data: items, mutate } = useSWR<ItemEntity[], any>("/api/items");
 
-  const createItemProps = { items };
+  const createItemProps = { items, mutate };
 
   return (
     <>

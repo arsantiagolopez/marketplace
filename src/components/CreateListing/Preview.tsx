@@ -1,7 +1,7 @@
 import React, { Dispatch, FC, SetStateAction } from "react";
 import { UseFormWatch } from "react-hook-form";
 import useSWR from "swr";
-import { ItemEntity, SellerProfileEntity } from "../../types";
+import { SellerProfileEntity } from "../../types";
 import { PriceTag } from "../PriceTag";
 
 interface FormData {
@@ -17,8 +17,6 @@ interface Props {
   currency: string;
   validImageField: boolean;
   setValidImageField: Dispatch<SetStateAction<boolean>>;
-  items?: ItemEntity[];
-  selectItemIds?: string[] | null;
 }
 
 const Preview: FC<Props> = ({
@@ -26,11 +24,11 @@ const Preview: FC<Props> = ({
   currency,
   validImageField,
   setValidImageField,
-  items,
-  selectItemIds,
 }) => {
-  const { data: sellerProfile } = useSWR("/api/sellers");
-  const { name: store }: SellerProfileEntity = sellerProfile || {};
+  const { data: sellerProfile } = useSWR<SellerProfileEntity, any>(
+    "/api/sellers"
+  );
+  const { name: store } = sellerProfile || {};
 
   const price = watch("price");
 
@@ -41,14 +39,12 @@ const Preview: FC<Props> = ({
     price,
     currency,
     isListing: true,
-    items,
-    selectItemIds,
   };
 
   return (
     <div className="flex flex-col justify-start w-full h-full pl-[10%]">
       <div className="z-10 mt-[10%] w-full pr-[50%]">
-        <div className="bg-white rounded-xl w-[22.5vw] h-fit md:max-h-[80vh] shadow-xl">
+        <div className="bg-white rounded-xl w-[22.5vw] h-fit md:max-h-[80vh] shadow-lg">
           <div className="relative w-full aspect-square p-4">
             <img
               src={watch("image")}
