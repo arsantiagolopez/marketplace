@@ -10,6 +10,7 @@ interface Props {
 const LogoutAlert: FC<Props> = ({ isOpen, setIsOpen }) => {
   // Log user out by destroying their session
   const handleLogout = async () => signOut();
+  const cancelLogout = () => setIsOpen(false);
 
   const dialogProps = {
     isOpen,
@@ -25,7 +26,10 @@ const LogoutAlert: FC<Props> = ({ isOpen, setIsOpen }) => {
         {...dialogProps}
         ActionControl={
           <div className="flex flex-row space-x-2 w-full h-12 mt-6">
-            <button className="rounded-lg bg-primary text-white w-full hover:bg-black">
+            <button
+              onClick={cancelLogout}
+              className="rounded-lg bg-primary text-white w-full hover:bg-black"
+            >
               Cancel
             </button>
             <button

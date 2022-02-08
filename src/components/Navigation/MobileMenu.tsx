@@ -7,10 +7,19 @@ import { IoCloseSharp, IoMenuSharp } from "react-icons/io5";
 interface Props {
   isMenuOpen: boolean;
   setIsMenuOpen: Dispatch<SetStateAction<boolean>>;
+  isProfileCompleted: boolean;
+  isSeller: boolean;
 }
 
-const MobileMenu: FC<Props> = ({ isMenuOpen, setIsMenuOpen }) => {
+const MobileMenu: FC<Props> = ({
+  isMenuOpen,
+  setIsMenuOpen,
+  isProfileCompleted,
+  isSeller,
+}) => {
   const handleSignout = () => signOut();
+
+  // @todo
   return (
     <>
       {isMenuOpen ? (
@@ -53,9 +62,30 @@ const MobileMenu: FC<Props> = ({ isMenuOpen, setIsMenuOpen }) => {
                 <Link href="/tokens">
                   <button className="tracking-tight">My tokens</button>
                 </Link>
-                <Link href="/dashboard">
-                  <button className="tracking-tight">Seller dashboard</button>
-                </Link>
+
+                {isProfileCompleted ? (
+                  <>
+                    {isSeller ? (
+                      <Link href="/dashboard">
+                        <button className="tracking-tight">
+                          Seller dashboard
+                        </button>
+                      </Link>
+                    ) : (
+                      <Link href="/register">
+                        <button className="tracking-tight">
+                          Become a seller
+                        </button>
+                      </Link>
+                    )}
+                  </>
+                ) : (
+                  <Link href="/register">
+                    <button className="tracking-tight">
+                      Complete your profile
+                    </button>
+                  </Link>
+                )}
 
                 <button
                   onClick={handleSignout}

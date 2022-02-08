@@ -1,13 +1,14 @@
-import type { NextPage } from "next";
 import Head from "next/head";
 // import { useRouter } from "next/router";
 import React from "react";
 // import useSWR from "swr";
 import { Layout } from "../../components/Layout";
 import { SellerTemplate } from "../../components/SellerTemplate";
-import { SellerProfileEntity } from "../../types";
+import { ProtectedPage, SellerProfileEntity } from "../../types";
 
-const SellerPage: NextPage = () => {
+interface Props {}
+
+const SellerPage: ProtectedPage<Props> = () => {
   // const { query } = useRouter();
   // const { data: listing } = useSWR<ListingEntity, any>(query?.address && `/api/sellers/${query?.address}`);
 
@@ -37,5 +38,7 @@ const SellerPage: NextPage = () => {
     </>
   );
 };
+
+SellerPage.isProtected = true;
 
 export default SellerPage;

@@ -123,6 +123,7 @@ const CreateListing: FC<Props> = ({ items, listings, mutate }) => {
   const dialogProps = {
     isOpen: onSuccess,
     setIsOpen: setOnSuccess,
+    isCentered: true,
     type: "success",
     message: "Your listing was created successfully!",
   };

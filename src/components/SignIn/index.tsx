@@ -1,3 +1,4 @@
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React, { FC, useEffect, useState } from "react";
 import { AnimatedFox } from "../AnimatedFox";
@@ -13,6 +14,9 @@ const SignIn: FC<Props> = () => {
   const [metamaskError, setMetamaskError] = useState<string | null>(null);
 
   const router = useRouter();
+
+  const { data } = useSession();
+  console.log(data);
 
   const metamaskButtonText = metamaskError
     ? metamaskError

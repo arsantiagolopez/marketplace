@@ -49,6 +49,34 @@ const Tokens: FC<Props> = ({ tokens }) => {
       image:
         "https://images.pexels.com/photos/5022807/pexels-photo-5022807.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500",
     },
+    {
+      id: 6,
+      type: "SELLER",
+      store: "Margarita Store",
+      image:
+        "https://images.pexels.com/photos/3410816/pexels-photo-3410816.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500",
+    },
+    {
+      id: 7,
+      type: "SELLER",
+      store: "Goku Sentai",
+      image:
+        "https://images.pexels.com/photos/2607108/pexels-photo-2607108.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500",
+    },
+    {
+      id: 8,
+      type: "SELLER",
+      store: "Photographer",
+      image:
+        "https://images.pexels.com/photos/5022807/pexels-photo-5022807.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500",
+    },
+    {
+      id: 9,
+      type: "SELLER",
+      store: "Photographer",
+      image:
+        "https://images.pexels.com/photos/5022807/pexels-photo-5022807.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500",
+    },
   ];
 
   return (
@@ -61,7 +89,7 @@ const Tokens: FC<Props> = ({ tokens }) => {
         </h1>
       </div>
 
-      <div className="pt-[4rem] md:mt-[4rem] w-full bg-white grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 px-4 md:px-20">
+      <div className="pt-[4rem] md:mt-[4rem] w-full bg-white grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6 px-4 md:px-20">
         {results.map(({ id, type, store, image }) => (
           <div
             key={id}

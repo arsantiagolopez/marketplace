@@ -1,10 +1,12 @@
-import { NextPage } from "next";
 import Head from "next/head";
 import React from "react";
 import { Layout } from "../components/Layout";
 import { Marketplace } from "../components/Marketplace";
+import { ProtectedPage } from "../types";
 
-const ExplorePage: NextPage = () => {
+interface Props {}
+
+const ExplorePage: ProtectedPage<Props> = () => {
   return (
     <>
       <Head>
@@ -17,5 +19,7 @@ const ExplorePage: NextPage = () => {
     </>
   );
 };
+
+ExplorePage.isProtected = true;
 
 export default ExplorePage;

@@ -90,7 +90,7 @@ const EditProfileButton: FC<Props> = ({
         <>
           <Popover.Button
             className={`flex flex-row items-center group font-Basic text-base text-primary px-6 pr-4 ml-6 rounded-full hover:bg-primary hover:text-white hover:bg-none hover:text-sm transition-all ease-in-out duration-500 ${
-              active?.includes("wallet") ? "py-0.5" : "py-1.5"
+              active?.includes("wallet") ? "py-0.5" : "py-1.5 capitalize"
             }`}
           >
             {message}
@@ -135,15 +135,12 @@ const EditProfileButton: FC<Props> = ({
                       className="relative w-full py-1 md:py-1 pl-3 my-1 md:my-2 text-left rounded-md focus:outline-black border border-tertiary text-secondary"
                     />
                     <button onClick={handleLogout} className="absolute right-1">
-                      <IoLogOut className="text-red-600 text-xl hover:text-red-800" />
+                      <IoLogOut className="text-red-600 text-xl opacity-80 hover:text-red-800" />
                     </button>
                   </div>
 
-                  <p className="font-medium mt-1">Connected account</p>
-                  <div
-                    onClick={toggleCurrency}
-                    className="relative flex flex-row items-center cursor-pointer group"
-                  >
+                  <p className="font-medium mt-1">Currency</p>
+                  <div className="relative flex flex-row items-center">
                     <input
                       disabled={true}
                       value={
@@ -151,16 +148,21 @@ const EditProfileButton: FC<Props> = ({
                       }
                       className="relative w-full py-1 md:py-1 pl-3 my-1 md:my-2 text-left rounded-md focus:outline-black border border-tertiary text-secondary"
                     />
-                    <span className="absolute right-6 inline-block my-1 py-1">
-                      {currency === "USD" ? (
-                        "💵"
-                      ) : (
-                        <img src="/currency/eth.png" className="h-4" />
-                      )}
-                    </span>
-                    <button type="button" className="absolute right-0">
-                      <CgArrowsExchangeAltV className="text-2xl text-gray-300 group-hover:text-primary" />
-                    </button>
+                    <div
+                      onClick={toggleCurrency}
+                      className="flex flex-row bg-green-500 items-center cursor-pointer group"
+                    >
+                      <span className="absolute right-6 inline-block my-1 py-1">
+                        {currency === "USD" ? (
+                          "💵"
+                        ) : (
+                          <img src="/currency/eth.png" className="h-4" />
+                        )}
+                      </span>
+                      <button type="button" className="absolute right-0">
+                        <CgArrowsExchangeAltV className="text-2xl text-gray-300 group-hover:text-primary" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

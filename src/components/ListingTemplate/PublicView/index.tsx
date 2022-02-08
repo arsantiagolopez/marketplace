@@ -3,25 +3,30 @@
 import Link from "next/link";
 import React, { FC, useContext } from "react";
 import { PreferencesContext } from "../../../context/PreferencesContext";
-import { ListingEntity, SellerProfileEntity } from "../../../types";
+import {
+  ListingEntity,
+  SellerProfileEntity,
+  UserSession,
+} from "../../../types";
 import { Dropdown } from "../../Dropdown";
 import { PriceTag } from "../../PriceTag";
 import { Tooltip } from "../../Tooltip";
 
 interface Props {
+  session?: UserSession;
   sellerProfile?: SellerProfileEntity;
   listing?: ListingEntity;
 }
 
-const PublicListingView: FC<Props> = ({ sellerProfile, listing }) => {
+const PublicListingView: FC<Props> = ({ session, sellerProfile, listing }) => {
   const { image, name, description, price, tokenId, tokenContract, items } =
     listing || {};
 
   const { currency } = useContext(PreferencesContext);
 
-  console.log(listing);
-
   const { name: sellerName, address: sellerAddress } = sellerProfile || {};
+
+  const isProfileCompleted = !!session?.user?.name;
 
   const priceTagProps = { currency, price: price?.eth, isListing: true };
 
@@ -128,9 +133,10 @@ const PublicListingView: FC<Props> = ({ sellerProfile, listing }) => {
             />
 
             {/* Log in call to action */}
-            <Link href="/signin">
+            <Link href={isProfileCompleted ? "/signin" : "/register"}>
               <button className="flex flex-row items-center justify-center font-Basic text-sm rounded-full bg-primary px-6 py-2 my-4 mr-4 text-white w-auto hover:animate-pulse hover:bg-black">
-                Want it? Sign in
+                Want it?{" "}
+                {isProfileCompleted ? "Sign in." : "Complete your profile."}
               </button>
             </Link>
           </div>

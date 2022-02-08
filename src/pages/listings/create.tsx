@@ -1,12 +1,13 @@
-import type { NextPage } from "next";
 import Head from "next/head";
 import React from "react";
 import useSWR from "swr";
 import { CreateListing } from "../../components/CreateListing";
 import { Layout } from "../../components/Layout";
-import { ItemEntity, ListingEntity } from "../../types";
+import { ItemEntity, ListingEntity, ProtectedPage } from "../../types";
 
-const CreateListingPage: NextPage = () => {
+interface Props {}
+
+const CreateListingPage: ProtectedPage<Props> = () => {
   const { data: items } = useSWR<ItemEntity[]>("/api/items");
   const { data: listings, mutate } = useSWR<ListingEntity[], any>(
     "/api/listings"
@@ -26,5 +27,7 @@ const CreateListingPage: NextPage = () => {
     </>
   );
 };
+
+CreateListingPage.isProtected = true;
 
 export default CreateListingPage;

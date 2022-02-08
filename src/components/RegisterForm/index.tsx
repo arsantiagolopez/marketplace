@@ -5,6 +5,8 @@ import { useForm, UseFormRegisterReturn } from "react-hook-form";
 import { CgCheck } from "react-icons/cg";
 import { IoArrowForward } from "react-icons/io5";
 import { RiLoader4Line } from "react-icons/ri";
+import { KeyedMutator } from "swr";
+import { UserEntity } from "../../types";
 import { CompletedCheck } from "../CompletedCheck";
 import { ConnectMetamask } from "../ConnectMetamask";
 import { Dialog } from "../Dialog";
@@ -12,14 +14,17 @@ import { BuyerFields } from "./BuyerFields";
 import { SellerFields } from "./SellerFields";
 import { SellerSelect } from "./SellerSelect";
 
-interface Props {}
-
 interface FormData {
   store?: string;
   name: string;
 }
 
-const RegisterForm: FC<Props> = () => {
+interface Props {
+  user?: UserEntity;
+  mutate: KeyedMutator<UserEntity>;
+}
+
+const RegisterForm: FC<Props> = ({ user, mutate }) => {
   const [onSuccess, setOnSuccess] = useState<boolean>(false);
   const [isSeller, setIsSeller] = useState<boolean | null>(null);
   const [isMetamaskConnected, setIsMetamaskConnected] =
@@ -27,6 +32,7 @@ const RegisterForm: FC<Props> = () => {
   const [isConnectingMetamask, setIsConnectingMetamask] =
     useState<boolean>(false);
   const [metamaskError, setMetamaskError] = useState<string | null>(null);
+  const [isRegistration, setIsRegistration] = useState<boolean>(true);
 
   const { handleSubmit, register, watch } = useForm<FormData>();
 
@@ -43,6 +49,7 @@ const RegisterForm: FC<Props> = () => {
     : validNameField;
 
   const isCompleted = isMetamaskConnected && fieldsCompleted;
+  const isProfileCompleted = !(!user?.name && user?.walletAddress);
 
   const nextButtonText = isCompleted
     ? "Looks good. Continue"
@@ -56,7 +63,9 @@ const RegisterForm: FC<Props> = () => {
     ? "Connecting ..."
     : isMetamaskConnected
     ? "Connected"
-    : "Connect with MetaMask";
+    : isProfileCompleted
+    ? "Connect with MetaMask"
+    : "Confirm your wallet";
 
   // Handle submit
   const onSubmit = async ({ store, name }: FormData) => {
@@ -65,8 +74,16 @@ const RegisterForm: FC<Props> = () => {
       await axios.post("/api/sellers", { name: store });
     }
     // Update user
-    await axios.put("/api/users/", { name, isSeller: !!store });
+    const { status } = await axios.put("/api/users/", {
+      name,
+      isSeller: !!store,
+    });
 
+    if (status !== 200) {
+      return setOnSuccess(false);
+    }
+
+    mutate({ ...user!, name });
     setOnSuccess(true);
   };
 
@@ -89,6 +106,9 @@ const RegisterForm: FC<Props> = () => {
     }
   }, [onSuccess]);
 
+  // Complete profile flag. It's a registration, until it's not
+  useEffect(() => setIsRegistration(!(!user?.name && user?.walletAddress)), []);
+
   const selectProps = { isSeller, setIsSeller };
   const sellerProps = {
     storeRegister,
@@ -107,13 +127,20 @@ const RegisterForm: FC<Props> = () => {
   const successDialogProps = {
     isOpen: onSuccess,
     setIsOpen: setOnSuccess,
+    isCentered: true,
     type: "success",
-    title: "Account succesfully created",
-    message: `Your ${
-      isSeller ? "seller" : "buyer"
-    } account was successfully created. You can start buying ${
-      isSeller && "and selling "
-    }items on the ${process.env.NEXT_PUBLIC_BRAND_NAME}`,
+    title: `${
+      isRegistration ? "Account successfully created" : "Profile completed"
+    }`,
+    message: `${
+      isRegistration
+        ? `Your ${
+            isSeller ? "seller" : "buyer"
+          } account was successfully created. You can start buying ${
+            isSeller && "and selling "
+          }items on the ${process.env.NEXT_PUBLIC_BRAND_NAME}`
+        : "Your profile was successfully completed."
+    }`,
   };
 
   return (

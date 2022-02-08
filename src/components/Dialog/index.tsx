@@ -16,6 +16,8 @@ interface Props {
   message?: string;
   /* Custom action buttons */
   ActionControl?: JSX.Element;
+  /* Center dialog content */
+  isCentered?: boolean;
 }
 
 const Dialog: FC<Props> = ({
@@ -25,6 +27,7 @@ const Dialog: FC<Props> = ({
   title,
   message,
   ActionControl,
+  isCentered,
 }) => (
   <Transition appear show={isOpen} as={Fragment}>
     <HeadlessDialog
@@ -58,7 +61,11 @@ const Dialog: FC<Props> = ({
           leaveFrom="opacity-100 scale-100"
           leaveTo="opacity-0 scale-95"
         >
-          <div className="inline-block w-full max-w-md p-6 pb-10 md:p-10 md:pt-8 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+          <div
+            className={`inline-block w-full max-w-md p-6 pb-10 md:p-10 md:pt-8 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl ${
+              isCentered && "text-center"
+            }`}
+          >
             {type === "success" ? (
               <CgCheck className="text-6xl text-green-500 mx-auto animate-[ping_0.5s_ease-out_1]" />
             ) : type === "failure" ? (

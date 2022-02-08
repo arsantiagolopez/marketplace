@@ -22,7 +22,9 @@ const getUser = async (
     }
 
     let { data: user, error } = await Supabase.from<UserEntity>("users")
-      .select("name, walletAddress, isSeller, sellerProfiles(name)")
+      .select(
+        "name, walletAddress, isSeller, sellerProfile: sellerProfiles(name)"
+      )
       .match({ id: userId })
       .single();
 
@@ -30,10 +32,10 @@ const getUser = async (
       return res.status(400).json({ error: error.message });
     }
 
-    const { sellerProfiles, ...rest } = user as any;
+    const { sellerProfile, ...rest } = user as any;
 
-    if (sellerProfiles) {
-      user = { ...rest, store: sellerProfiles[0].name };
+    if (sellerProfile.length) {
+      user = { ...rest, store: sellerProfile[0].name };
     }
 
     return res.status(200).json(user);
@@ -83,7 +85,7 @@ const updateUser = async (
   const { body } = req;
 
   try {
-    const userId = await getUserSessionAndId({ req });
+    const { userId } = (await getUserSessionAndId({ req })) || {};
 
     if (!userId) {
       return res

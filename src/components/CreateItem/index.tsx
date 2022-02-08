@@ -104,6 +104,7 @@ const CreateItem: FC<Props> = ({ items, mutate }) => {
   const dialogProps = {
     isOpen: onSuccess,
     setIsOpen: setOnSuccess,
+    isCentered: true,
     type: "success",
     message:
       "Your item was created successfully. You can now add it to your listings!",

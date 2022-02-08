@@ -1,12 +1,14 @@
-import type { NextPage } from "next";
 import Head from "next/head";
 import React from "react";
 import useSWR from "swr";
 import { Layout } from "../../components/Layout";
 import { Tokens } from "../../components/Tokens";
+import { ItemEntity, ProtectedPage } from "../../types";
 
-const TokensPage: NextPage = () => {
-  const { data: tokens } = useSWR("/api/items");
+interface Props {}
+
+const TokensPage: ProtectedPage<Props> = () => {
+  const { data: tokens } = useSWR<ItemEntity[], any>("/api/items");
 
   const tokensProps = { tokens };
 
@@ -22,5 +24,7 @@ const TokensPage: NextPage = () => {
     </>
   );
 };
+
+TokensPage.isProtected = true;
 
 export default TokensPage;

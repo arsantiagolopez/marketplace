@@ -1,12 +1,13 @@
-import type { NextPage } from "next";
 import Head from "next/head";
 import React from "react";
 import useSWR from "swr";
 import { CreateItem } from "../../components/CreateItem";
 import { Layout } from "../../components/Layout";
-import { ItemEntity } from "../../types";
+import { ItemEntity, ProtectedPage } from "../../types";
 
-const CreateItemPage: NextPage = () => {
+interface Props {}
+
+const CreateItemPage: ProtectedPage<Props> = () => {
   const { data: items, mutate } = useSWR<ItemEntity[], any>("/api/items");
 
   const createItemProps = { items, mutate };
@@ -23,5 +24,7 @@ const CreateItemPage: NextPage = () => {
     </>
   );
 };
+
+CreateItemPage.isProtected = true;
 
 export default CreateItemPage;

@@ -47,7 +47,7 @@ const SearchBar: FC<Props> = ({ query, setQuery }) => {
           value={query ?? ""}
           onChange={handleInputChange}
           placeholder="Search..."
-          className="w-full md:ml-4 md:pl-12 py-1 md:py-2 pl-3 my-2 md:my-1 font-Basic text-primary text-2xl placeholder:text-gray-300 focus:outline-none"
+          className="w-full md:ml-4 pl-12 md:pl-12 py-1 md:py-2 my-2 md:my-1 font-Basic text-primary text-2xl placeholder:text-gray-300 focus:outline-none"
         />
         {query && (
           <IoCloseSharp

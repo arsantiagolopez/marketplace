@@ -1,32 +1,39 @@
 import Link from "next/link";
 import React, { FC, useState } from "react";
-import useSWR from "swr";
+import { KeyedMutator } from "swr";
 import { UserEntity } from "../../types";
 import { Logo } from "../Logo";
 import { LogoutAlert } from "../LogoutAlert";
 import { EditProfileButton } from "./EditProfileButton";
 import { MobileMenu } from "./MobileMenu";
 
-interface Props {}
+interface Props {
+  user?: UserEntity;
+  mutate: KeyedMutator<UserEntity>;
+}
 
-const Authenticated: FC<Props> = () => {
+const Authenticated: FC<Props> = ({ user, mutate }) => {
   const [isLogoutOpen, setIsLogoutOpen] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
-  const { data: user, mutate } = useSWR<UserEntity, any>("/api/users");
+  const { name, walletAddress, isSeller } = user || {};
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  const { name, walletAddress, isSeller } = user || {};
+  const isProfileCompleted = !(!user?.name && user?.walletAddress);
 
-  const mobileMenuProps = { isMenuOpen, setIsMenuOpen };
+  const mobileMenuProps = { isMenuOpen, setIsMenuOpen, isProfileCompleted };
   const editProfileButtonProps = {
     name,
     walletAddress,
     mutate,
     setIsLogoutOpen,
   };
-  const logoutAlertProps = { isOpen: isLogoutOpen, setIsOpen: setIsLogoutOpen };
+  const logoutAlertProps = {
+    isOpen: isLogoutOpen,
+    setIsOpen: setIsLogoutOpen,
+    isCentered: true,
+  };
 
   return (
     <div
@@ -59,25 +66,41 @@ const Authenticated: FC<Props> = () => {
           <MobileMenu {...mobileMenuProps} />
         </button>
 
-        <div className="hidden md:flex flex-row h-full items-center mx-6">
-          {!user ? (
-            <div className="animate-pulse flex items-center space-x-6">
-              <div className="h-5 w-28 bg-slate-300 rounded"></div>
-              <div className="h-8 w-36 bg-slate-300 rounded-full"></div>
-            </div>
-          ) : (
-            <>
-              <EditProfileButton {...editProfileButtonProps} />
-              {isSeller && (
-                <Link href="/dashboard">
-                  <button className="font-Basic text-sm text-white bg-primary px-6 py-1.5 ml-2 rounded-full hover:bg-secondary">
-                    Seller dashboard
-                  </button>
-                </Link>
-              )}
-            </>
-          )}
-        </div>
+        {isProfileCompleted ? (
+          <div className="hidden md:flex flex-row h-full items-center mx-6">
+            {!user ? (
+              <div className="animate-pulse flex items-center space-x-6">
+                <div className="h-5 w-28 bg-slate-300 rounded"></div>
+                <div className="h-8 w-36 bg-slate-300 rounded-full"></div>
+              </div>
+            ) : (
+              <>
+                <EditProfileButton {...editProfileButtonProps} />
+                {isSeller ? (
+                  <Link href="/dashboard">
+                    <button className="font-Basic text-sm text-white bg-primary px-6 py-1.5 ml-2 rounded-full hover:bg-secondary">
+                      Seller dashboard
+                    </button>
+                  </Link>
+                ) : (
+                  <Link href="/register">
+                    <button className="font-Basic text-sm text-white bg-primary px-6 py-1.5 ml-2 rounded-full hover:bg-secondary">
+                      Become a seller
+                    </button>
+                  </Link>
+                )}
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="hidden md:flex flex-row h-full items-center mx-6">
+            <Link href="/register">
+              <button className="font-Basic text-sm text-white bg-primary px-6 py-1.5 ml-2 rounded-full hover:bg-secondary">
+                Complete your profile
+              </button>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Logout Modal */}

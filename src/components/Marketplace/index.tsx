@@ -67,18 +67,18 @@ const Marketplace: FC<Props> = () => {
   const searchBarProps = { query, setQuery };
 
   return (
-    <div className="flex flex-col items-center w-full bg-white pb-20">
+    <div className="flex flex-col items-center w-full bg-white pb-10 md:pb-20">
       <div className="h-24 md:h-40 w-full bg-gray-100 animate-[pulse_5s_ease-in-out_infinite]"></div>
       <div className="flex flex-col items-center w-full mt-[-2rem] md:mt-[-2.5rem] px-4">
         <SearchBar {...searchBarProps} />
       </div>
       {/* Marketplace */}
-      <div className="md:mt-[-2.5rem] w-full bg-white px-4 md:px-[10%]">
+      <div className="md:mt-[-2.5rem] w-full bg-white px-4 md:px-20">
         <div className="pt-[2.5rem]">
           {/* Query title and results info */}
           <div className="flex flex-col items-center min-h-[8rem]">
             <div className="flex flex-row justify-center items-end w-full">
-              <h1 className="text-5xl font-Basic text-primary pt-8 tracking-tight">
+              <h1 className="text-5xl font-Basic text-primary pt-0 md:pt-8 tracking-tight">
                 {query === "" ? "What you looking for?" : query ?? "Featured"}
               </h1>
               {query && (
@@ -103,7 +103,7 @@ const Marketplace: FC<Props> = () => {
           </div>
 
           {/* Results */}
-          <div className="py-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+          <div className="py-4 md:py-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
             {results.map(({ id, type, store, image }) => (
               <div
                 key={id}

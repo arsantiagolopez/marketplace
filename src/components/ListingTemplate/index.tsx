@@ -1,24 +1,26 @@
 import React, { FC } from "react";
 import { KeyedMutator } from "swr";
-import { ListingEntity, SellerProfileEntity } from "../../types";
+import { ListingEntity, SellerProfileEntity, UserSession } from "../../types";
 import { PublicListingView } from "./PublicView";
 import { SellerListingView } from "./SellerView";
 
 interface Props {
-  isSellerView: boolean;
+  session?: UserSession;
   sellerProfile?: SellerProfileEntity;
   listing?: ListingEntity;
   mutate: KeyedMutator<ListingEntity>;
 }
 
 const ListingTemplate: FC<Props> = ({
-  isSellerView,
+  session,
   sellerProfile,
   listing,
   mutate,
 }) => {
+  const isSellerView = session?.user?.walletAddress === listing?.sellerAddress;
+
   const sellerViewProps = { sellerProfile, listing, mutate };
-  const publicViewProps = { sellerProfile, listing };
+  const publicViewProps = { session, sellerProfile, listing };
 
   return isSellerView ? (
     <SellerListingView {...sellerViewProps} />
