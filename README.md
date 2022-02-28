@@ -13,9 +13,16 @@ Decentralized marketplace for sellers and buyers.
 - Keep a history of all your orders and invoices.
 - Create a buyer account.
 - Buy goods from other sellers.
-- Display your owned items.
+- Display your owned tokens.
 - Track your order history.
+- Integrate a friendlier currency interface. Allow users to input a desired dollar amount and convert to ETH on the backend.
 
 # Objectives
 
+- Learn the differences between the ERC-20, ERC-721 and ERC-1155 token standards.
+- Optimize for gas efficiency.
+- IPFS/Filecoin decentralized file storage programatically with NFT.storage.
 - Learn Supabase integration with Postgres and NextJS.
+- Practice extensibility, modular and clean code.
+- Abstract/Interfaces.
+- On-chain and off-chain storage architecture.

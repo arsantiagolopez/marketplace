@@ -17,35 +17,6 @@ export interface SellerProfileEntity {
   userId: string;
 }
 
-export interface ListingEntity {
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-  sellerAddress: string;
-  tokenContract: string;
-  tokenId: number;
-  createdAt: Date;
-  userId: string;
-  price?: ListingPriceEntity;
-  items?: ItemEntity[];
-}
-
-export interface ItemEntity {
-  id: string;
-  name: string;
-  image: string;
-  createdAt: Date;
-  userId: string;
-  price?: ItemPriceEntity;
-}
-
-export interface ListingItemEntity {
-  id: string;
-  listingId: string;
-  itemId: string;
-}
-
 export interface ListingPriceEntity {
   id: string;
   selectCurrency: string;
@@ -64,4 +35,29 @@ export interface ItemPriceEntity {
   lockedEthRate: string;
   createdAt: Date;
   itemId: string;
+}
+
+export interface TokenEntity {
+  tokenId: number;
+  tokenContract: string;
+  tokenHash: string;
+  price: string;
+  seller: string;
+  owner: string;
+}
+
+export interface ItemEntity {
+  itemId: number;
+  name: string;
+  image: string;
+  token: TokenEntity;
+}
+
+export interface ListingEntity {
+  listingId: number;
+  name: string;
+  image: string;
+  description: string;
+  token: TokenEntity;
+  isActive: boolean;
 }

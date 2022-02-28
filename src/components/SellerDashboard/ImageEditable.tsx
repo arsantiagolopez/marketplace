@@ -10,6 +10,7 @@ import React, {
 
 interface Props {
   isActiveUpdate: boolean;
+  setIsActiveUpdate: Dispatch<SetStateAction<boolean>>;
   editableImage: string;
   setEditableImage: Dispatch<SetStateAction<string>>;
   image?: string;
@@ -17,6 +18,7 @@ interface Props {
 
 const ImageEditable: FC<Props> = ({
   isActiveUpdate,
+  setIsActiveUpdate,
   editableImage,
   setEditableImage,
   image,
@@ -33,6 +35,8 @@ const ImageEditable: FC<Props> = ({
       event.preventDefault();
     }
   };
+
+  const handleClick = () => setIsActiveUpdate(true);
 
   // Set default invalid placeholder img on failed upload
   const handleInvalidUpload: ReactEventHandler<HTMLImageElement> = (event) => {
@@ -65,7 +69,8 @@ const ImageEditable: FC<Props> = ({
       ) : (
         <img
           src={image}
-          className="h-[90%] aspect-square rounded-full object-cover shadow-md"
+          onClick={handleClick}
+          className="h-[90%] aspect-square rounded-full object-cover shadow-md cursor-pointer"
           onError={handleInvalidUpload}
         />
       )}

@@ -2,9 +2,10 @@ import React, { FC, useEffect, useState } from "react";
 import { IoPricetags } from "react-icons/io5";
 import { ItemEntity } from "../../types";
 import { getSecretEmoji } from "../../utils/getSecretEmoji";
+import { useFormatPrice } from "../../utils/useFormatPrice";
 
 interface Props {
-  price?: number | string;
+  price?: string;
   currency: string;
   isListing?: boolean;
   items?: ItemEntity[];
@@ -21,25 +22,12 @@ const PriceTag: FC<Props> = ({
   const [isDetailed, setIsDetailed] = useState<boolean>(true);
   const [itemsSelected, setItemsSelected] = useState<ItemEntity[] | null>(null);
 
+  const { usd, eth } = useFormatPrice(price!) || {};
+  const formattedPrice =
+    price && price !== "0" ? (currency === "ETH" ? eth : usd) : null;
+
   const isExpanded: boolean =
     !!price && !!itemsSelected && !!itemsSelected.length && isDetailed;
-
-  const getFormattedUsd = (price: number) =>
-    price &&
-    (price.toString().includes(".") ? Number(price).toFixed(2) : price);
-
-  const getFormattedEth = (price: number) =>
-    price &&
-    (price.toString().length > 7
-      ? `~${parseFloat(price.toString()).toFixed(5)}`
-      : price.toString());
-
-  const formattedPrice =
-    price && currency === "USD"
-      ? getFormattedUsd(Number(price))
-      : currency === "ETH"
-      ? getFormattedEth(Number(price))
-      : null;
 
   // Only allow toggle for listings
   const toggleIsDetailed = () => isListing && setIsDetailed(!isDetailed);
@@ -49,7 +37,9 @@ const PriceTag: FC<Props> = ({
 
   useEffect(() => {
     if (items && selectItemIds && selectItemIds.length) {
-      const itemsWithId = items?.filter(({ id }) => selectItemIds.includes(id));
+      const itemsWithId = items?.filter(({ itemId }) =>
+        selectItemIds.includes(String(itemId))
+      );
       setIsDetailed(true);
       setItemsSelected(itemsWithId);
     } else {
@@ -91,18 +81,14 @@ const PriceTag: FC<Props> = ({
       <div className="items-center h-full w-full truncate">
         {isExpanded && (
           <div className="flex items-center w-full h-full pl-3 pr-1 overflow-x-scroll">
-            {itemsSelected?.map(({ id, name, price }, index) => {
-              const { usd, eth } = price || {};
-
-              const roundedEth = eth ? parseFloat(eth).toFixed(5) : "";
-
+            {itemsSelected?.map(({ itemId, name, token: { price } }, index) => {
               let finalPrice =
-                currency === "USD"
-                  ? `$${getFormattedUsd(usd!)}`
-                  : `${getFormattedEth(parseFloat(roundedEth))} ETH`;
+                currency === "ETH"
+                  ? `~${parseFloat(String(price)).toFixed(6)} ETH`
+                  : `$${Number(price).toFixed(2)}`;
 
               return (
-                <p key={id} className="font-Basic text-lg capitalize ml-1">
+                <p key={itemId} className="font-Basic text-lg capitalize ml-1">
                   {getNameOrEmoji(name)} ({finalPrice}){" "}
                   {itemsSelected.length - 1 !== index && "+"}
                 </p>

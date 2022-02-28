@@ -1,37 +1,21 @@
 import React, { FC, MouseEventHandler, useContext } from "react";
 import { PreferencesContext } from "../../context/PreferencesContext";
-import { ListingPriceEntity } from "../../types";
+import { useFormatPrice } from "../../utils/useFormatPrice";
 
 interface Props {
-  price?: ListingPriceEntity;
+  price?: string;
 }
 
 const PriceLabel: FC<Props> = ({ price }) => {
   const { currency, toggleCurrency } = useContext(PreferencesContext);
 
-  const { eth, usd } = (price as ListingPriceEntity) || {};
+  const { usd, eth } = useFormatPrice(price!) || {};
+  const formattedPrice = price && currency === "ETH" ? eth : usd;
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = (event) => {
     event.preventDefault();
     toggleCurrency();
   };
-
-  const getFormattedUsd = (price: number) =>
-    price &&
-    (price.toString().includes(".") ? Number(price).toFixed(2) : price);
-
-  const getFormattedEth = (price: number) =>
-    price &&
-    (price.toString().length > 7
-      ? `~${parseFloat(price.toString()).toFixed(5)}`
-      : price.toString());
-
-  const formattedPrice =
-    price && currency === "USD"
-      ? getFormattedUsd(usd)
-      : currency === "ETH"
-      ? getFormattedEth(parseFloat(eth))
-      : null;
 
   return (
     <button

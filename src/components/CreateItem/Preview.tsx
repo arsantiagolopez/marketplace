@@ -1,16 +1,19 @@
 import React, { Dispatch, FC, SetStateAction } from "react";
 import { UseFormWatch } from "react-hook-form";
+import { FileWithPreview } from "../../types";
+import { useEthPrice } from "../../utils/useEthPrice";
 import { PriceTag } from "../PriceTag";
 
 interface FormData {
   name: string;
   price: number;
-  image: string;
+  quantity: number;
 }
 
 interface Props {
   watch: UseFormWatch<FormData>;
   currency: string;
+  file: FileWithPreview | null;
   validImageField: boolean;
   setValidImageField: Dispatch<SetStateAction<boolean>>;
   validPriceField: boolean;
@@ -19,11 +22,24 @@ interface Props {
 const Preview: FC<Props> = ({
   watch,
   currency,
+  file,
   validImageField,
   setValidImageField,
   validPriceField,
 }) => {
-  const price = watch("price");
+  const { price: ethRate } = useEthPrice();
+
+  const priceInEth = (value: number): string => {
+    let price = value;
+    if (currency === "ETH") {
+      price = value;
+    } else {
+      price = value / parseFloat(ethRate!);
+    }
+    return String(price);
+  };
+
+  const price = priceInEth(watch("price"));
 
   const handleSuccess = () => setValidImageField(true);
   const handleError = () => setValidImageField(false);
@@ -35,7 +51,7 @@ const Preview: FC<Props> = ({
       <div className="z-10 ml-[10%] mt-[10%] rounded-xl w-8/12 aspect-square shadow-xl">
         <div className="relative w-full h-full p-4 ">
           <img
-            src={watch("image")}
+            src={file?.preview}
             onLoad={handleSuccess}
             onError={handleError}
             className="aspect-square object-cover h-full w-full rounded-xl overflow-hidden"

@@ -49,3 +49,6 @@ typechain
 cache
 artifacts
 typechain
+
+# Auto generated
+config.js

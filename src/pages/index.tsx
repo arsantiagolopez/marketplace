@@ -21,9 +21,7 @@ const IndexPage: NextPage = () => {
           </title>
           <link rel="icon" href="/favicon.ico" />
         </Head>
-        <Layout>
-          <>{!authenticated ? <Landing /> : <Marketplace />}</>
-        </Layout>
+        <Layout>{authenticated ? <Marketplace /> : <Landing />}</Layout>
       </>
     );
   }

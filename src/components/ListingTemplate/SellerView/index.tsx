@@ -1,63 +1,38 @@
 // @todo: Check if session ? Allow to buy : show login button (take to login screen on click)
 
 import Link from "next/link";
-import React, { FC, useContext, useEffect, useState } from "react";
+import React, { FC, useContext } from "react";
 import { HiExternalLink } from "react-icons/hi";
-import { KeyedMutator } from "swr";
 import { PreferencesContext } from "../../../context/PreferencesContext";
 import { ListingEntity, SellerProfileEntity } from "../../../types";
+import { useItems } from "../../../utils/useItems";
 import { Dropdown } from "../../Dropdown";
+import { PriceTag } from "../../PriceTag";
 import { Tooltip } from "../../Tooltip";
-import { DescriptionEditable } from "./DescriptionEditable";
-import { ImageEditable } from "./ImageEditable";
-import { NameEditable } from "./NameEditable";
-import { PriceEditable } from "./PriceEditable";
 
 interface Props {
   sellerProfile?: SellerProfileEntity;
   listing?: ListingEntity;
-  mutate: KeyedMutator<ListingEntity>;
 }
 
-const SellerListingView: FC<Props> = ({ sellerProfile, listing, mutate }) => {
-  const [activePrice, setActivePrice] = useState<number | string>("");
-
+const SellerListingView: FC<Props> = ({ sellerProfile, listing }) => {
   const { currency, toggleCurrency } = useContext(PreferencesContext);
 
-  const { image, name, description, price, tokenId, tokenContract, items } =
-    listing || {};
+  const { items } = useItems();
+
+  const {
+    token,
+    isActive,
+    name,
+    description,
+    image,
+    // items,
+  } = listing || {};
+
+  const { tokenId, tokenContract, price } = token || {};
   const { name: sellerName, address: sellerAddress } = sellerProfile || {};
 
-  // Switch price on currency change
-  const handleChangeCurrency = () => {
-    if (currency === "USD") {
-      setActivePrice(price?.eth!);
-    } else {
-      setActivePrice(price?.usd!);
-    }
-    toggleCurrency();
-  };
-
-  useEffect(() => {
-    if (name) {
-      setActivePrice(currency === "USD" ? price?.usd! : price?.eth!);
-    }
-  }, [name]);
-
-  const nameEditableProps = { name, listing, mutate };
-  const descriptionEditableProps = { description, listing, mutate };
-
-  const priceEditableProps = {
-    currency,
-    activePrice,
-    setActivePrice,
-    handleChangeCurrency,
-    listing,
-    mutate,
-  };
-  const imageEditableProps = { image, listing, mutate };
-
-  console.log(listing);
+  const priceTagProps = { currency, price, isListing: true };
 
   return (
     <div className="relative flex flex-col md:justify-center min-h-screen bg-white mt-[-4rem] md:mt-[-5rem] pt-16 md:pt-20">
@@ -70,10 +45,10 @@ const SellerListingView: FC<Props> = ({ sellerProfile, listing, mutate }) => {
               src={image}
               className="object-cover h-full w-full rounded-xl overflow-hidden"
             />
-            <ImageEditable {...imageEditableProps} />
           </div>
         </div>
 
+        {/* Seller name */}
         <div className="z-10 flex flex-col w-full text-primary md:p-5">
           {sellerName ? (
             <Link href={`/sellers/${sellerAddress}`}>
@@ -85,11 +60,31 @@ const SellerListingView: FC<Props> = ({ sellerProfile, listing, mutate }) => {
             <div className="flex flex-col w-36 h-8 animate-pulse bg-gray-100 rounded-md ml-1 shadow-md"></div>
           )}
 
-          <NameEditable {...nameEditableProps} />
+          {/* Name */}
+          <div className="flex flex-row w-fit py-2 font-Basic text-4xl md:text-6xl tracking-tighter my-3 md:my-4 max-w-full truncate">
+            {!name ? (
+              <div className="h-12 w-56 bg-slate-100 rounded animate-pulse shadow-md"></div>
+            ) : (
+              <h1 className="text-primary">{name}</h1>
+            )}
+          </div>
 
-          <DescriptionEditable {...descriptionEditableProps} />
+          {/* Description */}
+          <div className="flex flex-row flex-wrap w-full py-3 md:py-4 text-tertiary">
+            {!description ? (
+              <div className="flex flex-col w-11/12 h-full animate-pulse">
+                <div className="h-8 w-full bg-gray-100 mb-3 rounded-sm shadow-md"></div>
+                <div className="h-8 w-full bg-gray-100 mb-3 rounded-sm shadow-md"></div>
+                <div className="h-8 w-8/12 bg-gray-100 mb-3 rounded-sm shadow-md"></div>
+              </div>
+            ) : (
+              <p className="text-tertiary">{description}</p>
+            )}
+          </div>
 
-          <PriceEditable {...priceEditableProps} />
+          <button onClick={toggleCurrency}>
+            <PriceTag {...priceTagProps} />
+          </button>
 
           <div className="py-10 md:py-6 w-full md:mx-[-1.25rem] md:px-5">
             <Dropdown
@@ -130,13 +125,13 @@ const SellerListingView: FC<Props> = ({ sellerProfile, listing, mutate }) => {
               Panel={
                 <div className="flex flex-nowrap items-centerspace-x-2 overflow-x-scroll px-0 md:mx-[-1.25rem] md:px-5 pb-6">
                   {items?.length ? (
-                    items?.map(({ id, name, image, price }) => (
+                    items?.map(({ itemId, name, image, token: { price } }) => (
                       <Tooltip
-                        key={id}
+                        key={itemId}
                         label={`${name} (+ ${
-                          currency === "USD"
-                            ? `$${price?.usd}`
-                            : `~${parseFloat(price?.eth || "").toFixed(6)} ETH`
+                          currency === "ETH"
+                            ? `~${parseFloat(String(price)).toFixed(6)} ETH`
+                            : `$${Number(price).toFixed(2)}`
                         })`}
                         position="center"
                         fitWidth

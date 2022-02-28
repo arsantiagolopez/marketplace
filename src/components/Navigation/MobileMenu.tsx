@@ -8,7 +8,7 @@ interface Props {
   isMenuOpen: boolean;
   setIsMenuOpen: Dispatch<SetStateAction<boolean>>;
   isProfileCompleted: boolean;
-  isSeller: boolean;
+  isSeller?: boolean;
 }
 
 const MobileMenu: FC<Props> = ({
@@ -17,7 +17,7 @@ const MobileMenu: FC<Props> = ({
   isProfileCompleted,
   isSeller,
 }) => {
-  const handleSignout = () => signOut();
+  const handleSignOut = () => signOut();
 
   // @todo
   return (
@@ -88,7 +88,7 @@ const MobileMenu: FC<Props> = ({
                 )}
 
                 <button
-                  onClick={handleSignout}
+                  onClick={handleSignOut}
                   className="text-red-700 tracking-tight"
                 >
                   Log out

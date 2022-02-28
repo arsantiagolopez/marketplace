@@ -1,8 +1,14 @@
 import { Popover } from "@headlessui/react";
-import React, { FC, MouseEventHandler, useRef, useState } from "react";
+import React, {
+  FC,
+  MouseEventHandler,
+  ReactNode,
+  useRef,
+  useState,
+} from "react";
 
 interface Props {
-  children: JSX.Element;
+  children: ReactNode;
   label: string;
   position?: string;
   fitWidth?: boolean;

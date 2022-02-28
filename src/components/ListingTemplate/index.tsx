@@ -1,5 +1,4 @@
 import React, { FC } from "react";
-import { KeyedMutator } from "swr";
 import { ListingEntity, SellerProfileEntity, UserSession } from "../../types";
 import { PublicListingView } from "./PublicView";
 import { SellerListingView } from "./SellerView";
@@ -8,18 +7,12 @@ interface Props {
   session?: UserSession;
   sellerProfile?: SellerProfileEntity;
   listing?: ListingEntity;
-  mutate: KeyedMutator<ListingEntity>;
 }
 
-const ListingTemplate: FC<Props> = ({
-  session,
-  sellerProfile,
-  listing,
-  mutate,
-}) => {
-  const isSellerView = session?.user?.walletAddress === listing?.sellerAddress;
+const ListingTemplate: FC<Props> = ({ session, sellerProfile, listing }) => {
+  const isSellerView = session?.user?.walletAddress === listing?.token.seller;
 
-  const sellerViewProps = { sellerProfile, listing, mutate };
+  const sellerViewProps = { sellerProfile, listing };
   const publicViewProps = { session, sellerProfile, listing };
 
   return isSellerView ? (

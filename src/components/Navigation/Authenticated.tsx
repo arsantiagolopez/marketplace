@@ -3,7 +3,7 @@ import React, { FC, useState } from "react";
 import { KeyedMutator } from "swr";
 import { UserEntity } from "../../types";
 import { Logo } from "../Logo";
-import { LogoutAlert } from "../LogoutAlert";
+import { SignOutAlert } from "../SignOutAlert";
 import { EditProfileButton } from "./EditProfileButton";
 import { MobileMenu } from "./MobileMenu";
 
@@ -13,31 +13,38 @@ interface Props {
 }
 
 const Authenticated: FC<Props> = ({ user, mutate }) => {
-  const [isLogoutOpen, setIsLogoutOpen] = useState<boolean>(false);
+  const [isSignOutOpen, setIsSignOutOpen] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
   const { name, walletAddress, isSeller } = user || {};
+
+  const BRAND_NAME = process.env.NEXT_PUBLIC_BRAND_NAME;
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const isProfileCompleted = !(!user?.name && user?.walletAddress);
 
-  const mobileMenuProps = { isMenuOpen, setIsMenuOpen, isProfileCompleted };
+  const mobileMenuProps = {
+    isMenuOpen,
+    setIsMenuOpen,
+    isProfileCompleted,
+    isSeller,
+  };
   const editProfileButtonProps = {
     name,
     walletAddress,
     mutate,
-    setIsLogoutOpen,
+    setIsSignOutOpen,
   };
-  const logoutAlertProps = {
-    isOpen: isLogoutOpen,
-    setIsOpen: setIsLogoutOpen,
+  const signOutAlertProps = {
+    isOpen: isSignOutOpen,
+    setIsOpen: setIsSignOutOpen,
     isCentered: true,
   };
 
   return (
     <div
-      className={`fixed z-50 flex items-center justify-between h-16 md:h-20 w-screen px-6 transition-all duration-200 ease-in-out ${
+      className={`fixed z-50 flex items-center justify-between h-16 md:h-20 w-screen px-8 transition-all duration-200 ease-in-out ${
         isMenuOpen ? "bg-none" : "bg-white shadow-lg shadow-gray-100"
       }`}
     >
@@ -47,7 +54,11 @@ const Authenticated: FC<Props> = ({ user, mutate }) => {
           <div className="relative aspect-square h-1/2 w-auto mr-3">
             <Logo />
           </div>
-          <h1 className="text-xl font-Basic text-primary">Tri Payments</h1>
+          <Link href="/">
+            <h1 className="text-xl font-Basic text-primary cursor-pointer">
+              {BRAND_NAME}
+            </h1>
+          </Link>
         </>
         <div className="hidden md:flex md:mx-10">
           <Link href="/explore">
@@ -67,7 +78,7 @@ const Authenticated: FC<Props> = ({ user, mutate }) => {
         </button>
 
         {isProfileCompleted ? (
-          <div className="hidden md:flex flex-row h-full items-center mx-6">
+          <div className="hidden md:flex flex-row h-full items-center mx-3">
             {!user ? (
               <div className="animate-pulse flex items-center space-x-6">
                 <div className="h-5 w-28 bg-slate-300 rounded"></div>
@@ -103,8 +114,8 @@ const Authenticated: FC<Props> = ({ user, mutate }) => {
         )}
       </div>
 
-      {/* Logout Modal */}
-      <LogoutAlert {...logoutAlertProps} />
+      {/* Sign Out Modal */}
+      <SignOutAlert {...signOutAlertProps} />
     </div>
   );
 };

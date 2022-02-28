@@ -1,8 +1,9 @@
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import useSWR from "swr";
+import { getListingById } from "../../blockchain/Marketplace/getListingById";
 import { Layout } from "../../components/Layout";
 import { ListingTemplate } from "../../components/ListingTemplate";
 import {
@@ -19,16 +20,24 @@ interface Session {
 }
 
 const ListingPage: ProtectedPage<Props> = () => {
+  const [listing, setListing] = useState<ListingEntity | undefined>();
   const { query } = useRouter();
-  const { data: listing, mutate } = useSWR<ListingEntity, any>(
-    query?.id && `/api/listings/${query?.id}`
-  );
   const { data: sellerProfile } = useSWR<SellerProfileEntity, any>(
-    listing && `/api/sellers/${listing?.sellerAddress}`
+    listing && `/api/sellers/${listing?.token.seller}`
   );
   const { data: session } = useSession() as unknown as Session;
 
-  const listingTemplateProps = { session, sellerProfile, listing, mutate };
+  const listingTemplateProps = { session, sellerProfile, listing };
+
+  // Fetch listing from contract
+  const fetchListingById = async (id: number) => {
+    const data = await getListingById(id);
+    setListing(data);
+  };
+
+  useEffect(() => {
+    fetchListingById(Number(query?.id));
+  }, [query]);
 
   return (
     <>

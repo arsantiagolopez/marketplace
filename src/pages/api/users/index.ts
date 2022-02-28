@@ -16,9 +16,7 @@ const getUser = async (
     const { userId } = (await getUserSessionAndId({ req })) || {};
 
     if (!userId) {
-      return res.status(400).json({
-        error: "Must be authenticated to get your user.",
-      });
+      return res.status(200).json(null);
     }
 
     let { data: user, error } = await Supabase.from<UserEntity>("users")

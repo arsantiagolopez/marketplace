@@ -61,6 +61,7 @@ const SellerDashboard: FC<Props> = ({ listings, items }) => {
   };
   const imageEditableProps = {
     isActiveUpdate,
+    setIsActiveUpdate,
     editableImage,
     setEditableImage,
     image,

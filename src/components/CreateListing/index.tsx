@@ -1,16 +1,21 @@
 import axios from "axios";
-import React, { FC, useContext, useState } from "react";
+import { useRouter } from "next/router";
+import React, { FC, useContext, useEffect, useState } from "react";
 import { useForm, UseFormRegisterReturn } from "react-hook-form";
 import { CgCheck } from "react-icons/cg";
+import { HiOutlineUpload } from "react-icons/hi";
 import { IoCloseSharp } from "react-icons/io5";
 import { RiLoader4Line } from "react-icons/ri";
-import { KeyedMutator } from "swr";
+import { createListing } from "../../blockchain";
 import { PreferencesContext } from "../../context/PreferencesContext";
-import { ItemEntity, ListingEntity } from "../../types";
+import { FileWithPreview } from "../../types";
 import { getPriceData } from "../../utils/getPriceData";
 import { useEthPrice } from "../../utils/useEthPrice";
+import { useItems } from "../../utils/useItems";
+import { useListings } from "../../utils/useListings";
 import { CompletedCheck } from "../CompletedCheck";
 import { Dialog } from "../Dialog";
+import { DropzoneField } from "../DropzoneField";
 import { PriceCurrencyField } from "../PriceCurrencyField";
 import { Tooltip } from "../Tooltip";
 import { ItemsSelect } from "./ItemsSelect";
@@ -19,23 +24,26 @@ import { Preview } from "./Preview";
 interface FormData {
   name: string;
   price: number;
-  image: string;
   description: string;
   items: string[];
+  quantity: number;
 }
 
-interface Props {
-  items?: ItemEntity[];
-  listings?: ListingEntity[];
-  mutate: KeyedMutator<ListingEntity[]>;
-}
+interface Props {}
 
-const CreateListing: FC<Props> = ({ items, listings, mutate }) => {
+const CreateListing: FC<Props> = () => {
   const [onSuccess, setOnSuccess] = useState<boolean>(false);
-  const [selectItemIds, setSelectItemIds] = useState<string[] | null>(null);
+  const [selectItemIds, setSelectItemIds] = useState<number[] | null>(null);
   const [validImageField, setValidImageField] = useState<boolean>(false);
+  const [file, setFile] = useState<FileWithPreview | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const router = useRouter();
 
   const { currency, toggleCurrency } = useContext(PreferencesContext);
+
+  const { listings, setListings } = useListings();
+  const { items } = useItems();
 
   const { price: ethRate } = useEthPrice();
 
@@ -45,47 +53,74 @@ const CreateListing: FC<Props> = ({ items, listings, mutate }) => {
 
   // Handle submit
   const onSubmit = async (values: FormData) => {
-    const { price, ...rest } = values;
+    setIsLoading(true);
 
+    const { name, price, description, items: selectedItems, quantity } = values;
+
+    // @todo - Decide how to deal with selected items (in order? create db listing entity?)
     // Get selected item entities
-    const itemEntities = items?.filter(({ id }) => selectItemIds?.includes(id));
+    const itemEntities = items?.filter(({ itemId }) =>
+      selectItemIds?.includes(itemId)
+    );
 
     if (!ethRate) {
       console.log(
         "ETH price could not be fetched. Listing won't be created. Try again later."
       );
-      return;
+
+      return setIsLoading(false);
     }
 
     // Get prices formatted for db
     const prices = getPriceData({ currency, inputPrice: price, ethRate });
 
-    // Create listing
-    const { data, status } = await axios.post("/api/listings", {
-      ...rest,
-      items: itemEntities ?? [],
-      prices,
-    });
+    if (!file) {
+      return setIsLoading(false);
+    }
 
-    if (status !== 200) {
+    // Upload image to IPFS with NFT.Storage
+    let formData = new FormData();
+    formData.append("image", file);
+    formData.append("name", name);
+    formData.append("description", description);
+
+    const { data: IPFSResult, status: IPFSStatus } = await axios.post(
+      "/api/ipfs/image",
+      formData
+    );
+
+    // Only create item record if NFT uploaded to IPFS
+    if (IPFSStatus !== 200) {
+      setIsLoading(false);
       return setOnSuccess(false);
     }
 
-    mutate([...[listings], data]);
-    setOnSuccess(true);
+    const { ipnft: hash } = IPFSResult;
 
-    console.log(data, status);
+    // Create ERC1155Token & Marketplace listing
+    const listing = await createListing({
+      price: prices?.eth!,
+      name,
+      quantity,
+      hash,
+    });
+
+    // Update items
+    setListings([...listings, listing]);
+
+    setIsLoading(false);
+    setOnSuccess(true);
   };
 
   // Form fields registration
   const nameRegister: UseFormRegisterReturn = register("name", {
     required: "A name for your listing is required.",
   });
-  const imageRegister: UseFormRegisterReturn = register("image", {
-    required: "A picture for your listing is required.",
-  });
   const priceRegister: UseFormRegisterReturn = register("price", {
     required: "What's a good price for your listing?",
+  });
+  const quantityRegister: UseFormRegisterReturn = register("quantity", {
+    required: "What's your initial stock?",
   });
   const descriptionRegister: UseFormRegisterReturn = register("description", {
     required: "A description for your listing is required.",
@@ -93,18 +128,23 @@ const CreateListing: FC<Props> = ({ items, listings, mutate }) => {
 
   const validNameField = !!(watch("name") && watch("name").length > 2);
   const validPriceField = watch("price") > 0;
+  const validQuantityField = watch("quantity") > 0;
   const validDescriptionField = !!watch("description");
 
   const isCompleted =
     validNameField &&
     validImageField &&
     validPriceField &&
+    validQuantityField &&
     validDescriptionField;
 
   const nextButtonText = !isCompleted
     ? "Please complete all fields"
+    : isLoading
+    ? "Creating the transaction..."
     : "Looks good. Create listing";
 
+  const dropzoneFieldProps = { setFile };
   const priceCurrencyFieldProps = {
     priceRegister,
     validPriceField,
@@ -117,6 +157,7 @@ const CreateListing: FC<Props> = ({ items, listings, mutate }) => {
   const previewProps = {
     watch,
     currency,
+    file,
     validImageField,
     setValidImageField,
   };
@@ -127,6 +168,15 @@ const CreateListing: FC<Props> = ({ items, listings, mutate }) => {
     type: "success",
     message: "Your listing was created successfully!",
   };
+
+  // Redirect on success
+  useEffect(() => {
+    if (onSuccess) {
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 3000);
+    }
+  }, [onSuccess]);
 
   return (
     <div className="flex flex-row md:grid md:grid-cols-2 min-h-[calc(100vh-5rem)] px-6 md:px-0">
@@ -157,27 +207,25 @@ const CreateListing: FC<Props> = ({ items, listings, mutate }) => {
           </div>
         </div>
 
-        {/* Image URL */}
+        {/* Image */}
         <div className="form-field w-full md:py-3">
           <h1 className="relative title flex flex-row items-baseline">
-            Add a picture URL for your listing.{" "}
-            <Tooltip label="For testing purposes, we'll treat the image as a URL. Find one in Google Images.">
-              <div className="hidden md:flex justify-center items-center text-white bg-primary italic text-[9pt] rounded-full h-4 w-4 ml-2 pr-1">
-                i
-              </div>
-            </Tooltip>
+            Add a picture of your listing.
           </h1>
-          <div className="relative flex flex-row items-center">
-            <input
-              spellCheck={false}
-              autoComplete="off"
-              className={`relative w-full py-2 pl-3 pr-8 my-2 md:my-4 text-left bg-white rounded-lg shadow-md focus:outline-black truncate ${
-                !validImageField && "animate-pulse pr-0"
-              }`}
-              placeholder="https://www.carlogos.org/car-logos/tesla-logo-2200x2800.png"
-              {...imageRegister}
-            />
-            {!watch("image") ? null : validImageField ? (
+          <div className="relative flex flex-row items-center group">
+            <DropzoneField {...dropzoneFieldProps}>
+              <button
+                className={`w-full py-2 pl-3 pr-8 my-2 md:my-4 text-left bg-white rounded-lg shadow-md truncate ${
+                  !validImageField && "animate-pulse text-gray-400"
+                }`}
+              >
+                {!file ? "..." : file.name}
+              </button>
+            </DropzoneField>
+
+            {!file ? (
+              <HiOutlineUpload className="absolute text-gray-300 text-2xl right-2 pointer-events-none group-hover:text-primary" />
+            ) : validImageField ? (
               <CgCheck className="absolute text-green-500 text-3xl right-1 pointer-events-none" />
             ) : (
               <IoCloseSharp className="absolute text-red-600 text-xl right-2 pointer-events-none" />
@@ -188,6 +236,35 @@ const CreateListing: FC<Props> = ({ items, listings, mutate }) => {
         {/* Price */}
         <div className="form-field w-full md:py-3">
           <PriceCurrencyField {...priceCurrencyFieldProps} />
+        </div>
+
+        {/* Quantity */}
+        <div className="form-field w-full md:py-3">
+          <div className="flex flex-row items-baseline">
+            <h1 className="title">Initial stock.</h1>
+            <Tooltip label="Let's keep track of your inventory. What's your initial stock? You can re-stock when supply goes down.">
+              <div className="flex justify-center items-center text-white bg-primary italic text-[9pt] rounded-full h-4 w-4 ml-2 ">
+                i
+              </div>
+            </Tooltip>
+          </div>
+
+          <div className="relative flex flex-row items-center">
+            <input
+              step="1"
+              type="number"
+              spellCheck={false}
+              autoComplete="off"
+              className={`relative w-full py-2 pl-3 pr-8 my-2 md:my-4 text-left bg-white rounded-lg shadow-md focus:outline-black ${
+                !validNameField && "animate-pulse pr-0"
+              }`}
+              placeholder="100"
+              {...quantityRegister}
+            />
+            {validNameField && (
+              <CgCheck className="absolute text-green-500 text-3xl right-1 pointer-events-none" />
+            )}
+          </div>
         </div>
 
         {/* Description */}
@@ -216,14 +293,16 @@ const CreateListing: FC<Props> = ({ items, listings, mutate }) => {
         {/* Create Listing */}
         <button
           type="submit"
-          disabled={!isCompleted}
+          disabled={!isCompleted || isLoading}
           className={`flex justify-center font-Basic items-center rounded-full text-white mt-12 py-3 px-6 pr-4 w-full ${
-            isCompleted ? "bg-primary hover:bg-black" : "bg-gray-600"
+            isCompleted && !isLoading
+              ? "bg-primary hover:bg-black"
+              : "bg-gray-600"
           }`}
         >
           {nextButtonText}
           <CompletedCheck
-            isCompleted={isCompleted}
+            isCompleted={isCompleted && !isLoading}
             CustomSpinner={
               <RiLoader4Line className="text-xl ml-3 mr-1 pointer-events-none text-white animate-spin-slow" />
             }

@@ -13,10 +13,10 @@ const Navigation: FC<Props> = () => {
 
   const isAuthenticated = status !== "loading" && session;
 
-  const authentictedProps = { user, mutate };
+  const authenticatedProps = { user, mutate };
 
   return isAuthenticated ? (
-    <Authenticated {...authentictedProps} />
+    <Authenticated {...authenticatedProps} />
   ) : (
     <NotAuthenticated />
   );

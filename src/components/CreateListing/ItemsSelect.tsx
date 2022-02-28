@@ -8,14 +8,14 @@ import { Tooltip } from "../Tooltip";
 
 interface Props {
   items?: ItemEntity[];
-  selectItemIds: string[] | null;
-  setSelectItemIds: Dispatch<SetStateAction<string[] | null>>;
+  selectItemIds: number[] | null;
+  setSelectItemIds: Dispatch<SetStateAction<number[] | null>>;
 }
 
 const ItemsSelect: FC<Props> = ({ items, selectItemIds, setSelectItemIds }) => {
   const isOpen = selectItemIds !== null;
 
-  const handleSelectItem = (id: string) => {
+  const handleSelectItem = (id: number) => {
     if (selectItemIds && !selectItemIds.includes(id)) {
       setSelectItemIds([...selectItemIds, id]);
     } else if (selectItemIds && selectItemIds.includes(id)) {
@@ -85,19 +85,19 @@ const ItemsSelect: FC<Props> = ({ items, selectItemIds, setSelectItemIds }) => {
               }`}
             >
               {items ? (
-                items.map(({ id, image }) => (
+                items.map(({ itemId, image }) => (
                   <div
-                    key={id}
-                    onClick={() => handleSelectItem(id)}
+                    key={itemId}
+                    onClick={() => handleSelectItem(itemId)}
                     className="relative flex justify-center items-center rounded-lg aspect-square w-full cursor-pointer shadow-lg hover:opacity-90 overflow-hidden"
                   >
                     <img
                       src={image}
                       className={`h-full w-full object-cover ${
-                        selectItemIds?.includes(id) && "brightness-[30%]"
+                        selectItemIds?.includes(itemId) && "brightness-[30%]"
                       }`}
                     />
-                    {selectItemIds?.includes(id) && (
+                    {selectItemIds?.includes(itemId) && (
                       <CgCheck className="z-10 absolute text-white text-7xl pointer-events-none animate-pulse" />
                     )}
                   </div>

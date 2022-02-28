@@ -6,6 +6,7 @@ import { CgCheck } from "react-icons/cg";
 import { IoArrowForward } from "react-icons/io5";
 import { RiLoader4Line } from "react-icons/ri";
 import { KeyedMutator } from "swr";
+import { createSeller } from "../../blockchain";
 import { UserEntity } from "../../types";
 import { CompletedCheck } from "../CompletedCheck";
 import { ConnectMetamask } from "../ConnectMetamask";
@@ -69,10 +70,22 @@ const RegisterForm: FC<Props> = ({ user, mutate }) => {
 
   // Handle submit
   const onSubmit = async ({ store, name }: FormData) => {
-    // Create seller profile
     if (store) {
-      await axios.post("/api/sellers", { name: store });
+      // If not registered, register seller on the smart contract
+      const success = await createSeller();
+
+      if (!success) {
+        return setOnSuccess(false);
+      }
+
+      // Create seller profile
+      await axios.post("/api/sellers", {
+        name: store,
+        image: process.env.NEXT_PUBLIC_DEFAULT_STORE_IMAGE,
+        address: user?.walletAddress,
+      });
     }
+
     // Update user
     const { status } = await axios.put("/api/users/", {
       name,

@@ -21,14 +21,14 @@ interface Props {
   name?: string;
   walletAddress?: string;
   mutate: KeyedMutator<UserEntity>;
-  setIsLogoutOpen: Dispatch<SetStateAction<boolean>>;
+  setIsSignOutOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 const EditProfileButton: FC<Props> = ({
   name,
   walletAddress,
   mutate,
-  setIsLogoutOpen,
+  setIsSignOutOpen,
 }) => {
   const [nameInput, setNameInput] = useState<string>(name || "");
   const [active, setActive] = useState<string | null>(null);
@@ -64,7 +64,7 @@ const EditProfileButton: FC<Props> = ({
     close();
   };
 
-  const handleLogout = () => setIsLogoutOpen(true);
+  const handleSignOut = () => setIsSignOutOpen(true);
 
   // Toggle message every x seconds
   useEffect(() => {
@@ -134,7 +134,10 @@ const EditProfileButton: FC<Props> = ({
                       value={shortAddress}
                       className="relative w-full py-1 md:py-1 pl-3 my-1 md:my-2 text-left rounded-md focus:outline-black border border-tertiary text-secondary"
                     />
-                    <button onClick={handleLogout} className="absolute right-1">
+                    <button
+                      onClick={handleSignOut}
+                      className="absolute right-1"
+                    >
                       <IoLogOut className="text-red-600 text-xl opacity-80 hover:text-red-800" />
                     </button>
                   </div>

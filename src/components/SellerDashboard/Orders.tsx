@@ -22,10 +22,7 @@ const Orders: FC<Props> = ({ listings }) => {
             key={id}
             className="flex flex-row items-center w-full hover:bg-gray-50 rounded-xl"
           >
-            <div
-              key={id}
-              className="rounded-lg aspect-square w-24 h-24 min-h-[6rem] min-w-[6rem] overflow-hidden shadow-lg"
-            >
+            <div className="rounded-lg aspect-square w-24 h-24 min-h-[6rem] min-w-[6rem] overflow-hidden shadow-lg">
               <img src={image} className="h-full w-full object-cover" />
             </div>
             <div className="hidden md:flex flex-row justify-between w-full space-x-3 md:space-x-6 ml-10 mr-6">
