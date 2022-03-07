@@ -46,7 +46,8 @@ const ConnectMetamask: FC<Props> = ({
     try {
       // Request connected accounts
       await provider.send("eth_requestAccounts", []);
-      const signer = provider.getSigner();
+      const account = await window.ethereum.request({ method: "eth_accounts" });
+      const signer = provider.getSigner(account[0]);
       const walletAddress = await signer.getAddress();
 
       const { data: signature } = await axios.post("/api/auth/signature", {
@@ -106,6 +107,12 @@ const ConnectMetamask: FC<Props> = ({
     setTimeout(() => setMetamaskError(null), 3000);
   };
 
+  // Reload session by replicating a different tab click
+  const reloadSession = () => {
+    const event = new Event("visibilitychange");
+    document.dispatchEvent(event);
+  };
+
   // Attempt connection
   useEffect(() => {
     if (
@@ -122,6 +129,9 @@ const ConnectMetamask: FC<Props> = ({
 
       // MetaMask installed, proceed to login
       login();
+
+      // Refresh session to apply mutations
+      reloadSession();
     } else {
       isMounted.current = true;
     }

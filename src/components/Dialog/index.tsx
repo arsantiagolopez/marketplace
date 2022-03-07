@@ -2,13 +2,14 @@ import { Dialog as HeadlessDialog, Transition } from "@headlessui/react";
 import React, { Dispatch, FC, Fragment, SetStateAction } from "react";
 import { CgCheck } from "react-icons/cg";
 import { IoCloseSharp } from "react-icons/io5";
+import { RiLoader4Line } from "react-icons/ri";
 
 interface Props {
   /* Is dialog open or closed */
   isOpen: boolean;
   /* Open or close dialog */
   setIsOpen: Dispatch<SetStateAction<boolean>>;
-  /* Success, failure, or null */
+  /* Success, failure, or loading */
   type?: string;
   /* Title to display on dialog */
   title?: string;
@@ -70,6 +71,8 @@ const Dialog: FC<Props> = ({
               <CgCheck className="text-6xl text-green-500 mx-auto animate-[ping_0.5s_ease-out_1]" />
             ) : type === "failure" ? (
               <IoCloseSharp className="text-4xl my-3 text-red-500 mx-auto animate-[ping_0.5s_ease-out_1]" />
+            ) : type === "loading" ? (
+              <RiLoader4Line className="text-4xl my-3 text-yellow-400 mx-auto animate-spin-slow" />
             ) : null}
 
             <HeadlessDialog.Title

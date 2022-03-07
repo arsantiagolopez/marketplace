@@ -7,11 +7,11 @@ interface Props {
 
 const PreferencesProvider: FC<Props> = ({ children }) => {
   const [currency, setCurrency] = useState<string>(
-    process.env.NEXT_PUBLIC_PREFERRED_CURRENCY || "USD"
+    process.env.NEXT_PUBLIC_PREFERRED_CURRENCY || "ETH"
   );
 
   const toggleCurrency = () => {
-    setCurrency(currency === "USD" ? "ETH" : "USD");
+    setCurrency(currency === "ETH" ? "USD" : "ETH");
   };
 
   return (

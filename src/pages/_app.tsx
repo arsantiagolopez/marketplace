@@ -4,11 +4,13 @@ import { SessionProvider } from "next-auth/react";
 import type { AppProps as NextAppProps } from "next/app";
 import { SWRConfig } from "swr";
 import { ProtectedRoute } from "../components/ProtectedRoute";
+import { CartProvider } from "../context/CartProvider";
 import { PreferencesProvider } from "../context/PreferencesProvider";
 import "../styles/globals.css";
 
 interface IsProtectedProp {
   isProtected?: boolean;
+  isSeller?: boolean;
 }
 
 // Custom type to override Component type
@@ -27,13 +29,15 @@ const MyApp: NextPage<AppProps> = ({
       }}
     >
       <PreferencesProvider>
-        {Component.isProtected ? (
-          <ProtectedRoute>
+        <CartProvider>
+          {Component.isProtected ? (
+            <ProtectedRoute>
+              <Component {...pageProps} />
+            </ProtectedRoute>
+          ) : (
             <Component {...pageProps} />
-          </ProtectedRoute>
-        ) : (
-          <Component {...pageProps} />
-        )}
+          )}
+        </CartProvider>
       </PreferencesProvider>
     </SWRConfig>
   </SessionProvider>

@@ -137,6 +137,7 @@ const updateSellerProfile = async (
       )
         .update({ ...body, userId })
         .single();
+
       profile = data;
     }
 

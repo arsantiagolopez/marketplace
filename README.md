@@ -23,6 +23,10 @@ Decentralized marketplace for sellers and buyers.
 - Optimize for gas efficiency.
 - IPFS/Filecoin decentralized file storage programatically with NFT.storage.
 - Learn Supabase integration with Postgres and NextJS.
+- Store some information off chain, to save on gas costs (seller data).
 - Practice extensibility, modular and clean code.
 - Abstract/Interfaces.
 - On-chain and off-chain storage architecture.
+- Learn to think of a gas efficient architecture. Gas first code.
+- Reduce MetaMask requests per action.
+- Separation of concerns & folder structure in the frontend.

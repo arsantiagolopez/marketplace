@@ -8,7 +8,7 @@ import { IoCloseSharp } from "react-icons/io5";
 import { RiLoader4Line } from "react-icons/ri";
 import { createListing } from "../../blockchain";
 import { PreferencesContext } from "../../context/PreferencesContext";
-import { FileWithPreview } from "../../types";
+import { FileWithPreview, UserSession } from "../../types";
 import { getPriceData } from "../../utils/getPriceData";
 import { useEthPrice } from "../../utils/useEthPrice";
 import { useItems } from "../../utils/useItems";
@@ -29,14 +29,19 @@ interface FormData {
   quantity: number;
 }
 
-interface Props {}
+interface Props {
+  session: UserSession;
+}
 
-const CreateListing: FC<Props> = () => {
+const CreateListing: FC<Props> = ({ session }) => {
   const [onSuccess, setOnSuccess] = useState<boolean>(false);
   const [selectItemIds, setSelectItemIds] = useState<number[] | null>(null);
   const [validImageField, setValidImageField] = useState<boolean>(false);
   const [file, setFile] = useState<FileWithPreview | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [mustRegisterSeller, setMustRegisterSeller] = useState<boolean>(
+    !session?.user?.isSeller || false
+  );
 
   const router = useRouter();
 
@@ -98,18 +103,23 @@ const CreateListing: FC<Props> = () => {
     const { ipnft: hash } = IPFSResult;
 
     // Create ERC1155Token & Marketplace listing
-    const listing = await createListing({
-      price: prices?.eth!,
-      name,
-      quantity,
-      hash,
-    });
+    try {
+      const listing = await createListing({
+        price: prices?.eth!,
+        name,
+        quantity: parseInt(String(quantity)),
+        hash,
+      });
 
-    // Update items
-    setListings([...listings, listing]);
+      // Update items
+      setListings([...listings, listing]);
 
-    setIsLoading(false);
-    setOnSuccess(true);
+      setIsLoading(false);
+      setOnSuccess(true);
+    } catch {
+      setIsLoading(false);
+      setOnSuccess(false);
+    }
   };
 
   // Form fields registration
@@ -141,7 +151,7 @@ const CreateListing: FC<Props> = () => {
   const nextButtonText = !isCompleted
     ? "Please complete all fields"
     : isLoading
-    ? "Creating the transaction..."
+    ? "Starting the transaction..."
     : "Looks good. Create listing";
 
   const dropzoneFieldProps = { setFile };
@@ -161,12 +171,20 @@ const CreateListing: FC<Props> = () => {
     validImageField,
     setValidImageField,
   };
-  const dialogProps = {
+  const successDialogProps = {
     isOpen: onSuccess,
     setIsOpen: setOnSuccess,
     isCentered: true,
     type: "success",
-    message: "Your listing was created successfully!",
+    message: "Your listing was successfully created!",
+  };
+  const sellerRegistrationDialogProps = {
+    isOpen: mustRegisterSeller,
+    setIsOpen: setMustRegisterSeller,
+    isCentered: true,
+    type: "loading",
+    message:
+      "You must create a seller profile to sell items on the Marketplace. Redirecting to registration page...",
   };
 
   // Redirect on success
@@ -177,6 +195,15 @@ const CreateListing: FC<Props> = () => {
       }, 3000);
     }
   }, [onSuccess]);
+
+  // Redirect if must register seller profile
+  useEffect(() => {
+    if (mustRegisterSeller) {
+      setTimeout(() => {
+        router.push("/register");
+      }, 3000);
+    }
+  }, [mustRegisterSeller]);
 
   return (
     <div className="flex flex-row md:grid md:grid-cols-2 min-h-[calc(100vh-5rem)] px-6 md:px-0">
@@ -316,7 +343,10 @@ const CreateListing: FC<Props> = () => {
       </div>
 
       {/* Success/failure Modal */}
-      <Dialog {...dialogProps} />
+      <Dialog {...successDialogProps} />
+
+      {/* Seller Registration Modal */}
+      <Dialog {...sellerRegistrationDialogProps} />
     </div>
   );
 };

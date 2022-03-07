@@ -1,7 +1,7 @@
 import Head from "next/head";
 import React from "react";
+import { Explore } from "../components/Explore";
 import { Layout } from "../components/Layout";
-import { Marketplace } from "../components/Marketplace";
 import { ProtectedPage } from "../types";
 
 interface Props {}
@@ -14,7 +14,7 @@ const ExplorePage: ProtectedPage<Props> = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
-        <Marketplace />
+        <Explore />
       </Layout>
     </>
   );

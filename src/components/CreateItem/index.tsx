@@ -8,7 +8,7 @@ import { IoCloseSharp } from "react-icons/io5";
 import { RiLoader4Line } from "react-icons/ri";
 import { createItem } from "../../blockchain";
 import { PreferencesContext } from "../../context/PreferencesContext";
-import { FileWithPreview } from "../../types";
+import { FileWithPreview, UserSession } from "../../types";
 import { getPriceData } from "../../utils/getPriceData";
 import { useEthPrice } from "../../utils/useEthPrice";
 import { useItems } from "../../utils/useItems";
@@ -25,13 +25,18 @@ interface FormData {
   quantity: number;
 }
 
-interface Props {}
+interface Props {
+  session: UserSession;
+}
 
-const CreateItem: FC<Props> = () => {
+const CreateItem: FC<Props> = ({ session }) => {
   const [onSuccess, setOnSuccess] = useState<boolean>(false);
   const [validImageField, setValidImageField] = useState<boolean>(false);
   const [file, setFile] = useState<FileWithPreview | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [mustRegisterSeller, setMustRegisterSeller] = useState<boolean>(
+    !session?.user?.isSeller || false
+  );
 
   const router = useRouter();
 
@@ -86,19 +91,24 @@ const CreateItem: FC<Props> = () => {
 
     const { ipnft: hash } = IPFSResult;
 
-    // Create ERC1155Token & Marketplace item
-    const item = await createItem({
-      price: prices?.eth!,
-      name,
-      quantity,
-      hash,
-    });
+    try {
+      // Create ERC1155Token & Marketplace item
+      const item = await createItem({
+        price: prices?.eth!,
+        name,
+        quantity: parseInt(String(quantity)),
+        hash,
+      });
 
-    // Update items
-    setItems([...items, item]);
+      // Update items
+      setItems([...items, item]);
 
-    setIsLoading(false);
-    setOnSuccess(true);
+      setIsLoading(false);
+      setOnSuccess(true);
+    } catch {
+      setIsLoading(false);
+      setOnSuccess(false);
+    }
   };
 
   // Form fields registration
@@ -122,7 +132,7 @@ const CreateItem: FC<Props> = () => {
   const nextButtonText = !isCompleted
     ? "Please complete all fields"
     : isLoading
-    ? "Creating the transaction..."
+    ? "Starting the transaction..."
     : "Looks good. Create item";
 
   const dropzoneFieldProps = { setFile };
@@ -142,13 +152,21 @@ const CreateItem: FC<Props> = () => {
     setValidImageField,
     validPriceField,
   };
-  const dialogProps = {
+  const successDialogProps = {
     isOpen: onSuccess,
     setIsOpen: setOnSuccess,
     isCentered: true,
     type: "success",
     message:
-      "Your item was created successfully. You can now add it to your listings!",
+      "Your item was successfully created. You can now add it to your listings!",
+  };
+  const sellerRegistrationDialogProps = {
+    isOpen: mustRegisterSeller,
+    setIsOpen: setMustRegisterSeller,
+    isCentered: true,
+    type: "loading",
+    message:
+      "You must create a seller profile to sell items on the Marketplace. Redirecting to registration page...",
   };
 
   // Redirect on success
@@ -159,6 +177,15 @@ const CreateItem: FC<Props> = () => {
       }, 3000);
     }
   }, [onSuccess]);
+
+  // Redirect if must register seller profile
+  useEffect(() => {
+    if (mustRegisterSeller) {
+      setTimeout(() => {
+        router.push("/register");
+      }, 3000);
+    }
+  }, [mustRegisterSeller]);
 
   return (
     <div className="flex flex-row md:grid md:grid-cols-2 min-h-[calc(100vh-5rem)] px-6 md:px-0">
@@ -276,7 +303,10 @@ const CreateItem: FC<Props> = () => {
       </div>
 
       {/* Success/failure Modal */}
-      <Dialog {...dialogProps} />
+      <Dialog {...successDialogProps} />
+
+      {/* Seller Registration Modal */}
+      <Dialog {...sellerRegistrationDialogProps} />
     </div>
   );
 };

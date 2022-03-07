@@ -85,7 +85,7 @@ const PriceTag: FC<Props> = ({
               let finalPrice =
                 currency === "ETH"
                   ? `~${parseFloat(String(price)).toFixed(6)} ETH`
-                  : `$${Number(price).toFixed(2)}`;
+                  : `$${Number(price).toLocaleString()}`;
 
               return (
                 <p key={itemId} className="font-Basic text-lg capitalize ml-1">

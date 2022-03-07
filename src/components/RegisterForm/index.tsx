@@ -5,9 +5,8 @@ import { useForm, UseFormRegisterReturn } from "react-hook-form";
 import { CgCheck } from "react-icons/cg";
 import { IoArrowForward } from "react-icons/io5";
 import { RiLoader4Line } from "react-icons/ri";
-import { KeyedMutator } from "swr";
 import { createSeller } from "../../blockchain";
-import { UserEntity } from "../../types";
+import { UserSession } from "../../types";
 import { CompletedCheck } from "../CompletedCheck";
 import { ConnectMetamask } from "../ConnectMetamask";
 import { Dialog } from "../Dialog";
@@ -21,11 +20,10 @@ interface FormData {
 }
 
 interface Props {
-  user?: UserEntity;
-  mutate: KeyedMutator<UserEntity>;
+  session?: UserSession;
 }
 
-const RegisterForm: FC<Props> = ({ user, mutate }) => {
+const RegisterForm: FC<Props> = ({ session }) => {
   const [onSuccess, setOnSuccess] = useState<boolean>(false);
   const [isSeller, setIsSeller] = useState<boolean | null>(null);
   const [isMetamaskConnected, setIsMetamaskConnected] =
@@ -38,6 +36,8 @@ const RegisterForm: FC<Props> = ({ user, mutate }) => {
   const { handleSubmit, register, watch } = useForm<FormData>();
 
   const router = useRouter();
+
+  const { user } = session || {};
 
   // Loading is false when user is missing required fields
   const validStoreField = !!(isSeller
@@ -70,34 +70,35 @@ const RegisterForm: FC<Props> = ({ user, mutate }) => {
 
   // Handle submit
   const onSubmit = async ({ store, name }: FormData) => {
-    if (store) {
-      // If not registered, register seller on the smart contract
-      const success = await createSeller();
+    if (user) {
+      if (store) {
+        // If not registered, register seller on the smart contract
+        const success = await createSeller();
 
-      if (!success) {
+        if (!success) {
+          return setOnSuccess(false);
+        }
+
+        // Create seller profile
+        await axios.post("/api/sellers", {
+          name: store,
+          image: process.env.NEXT_PUBLIC_DEFAULT_STORE_IMAGE,
+          address: user.walletAddress,
+        });
+      }
+
+      // Update user
+      const { status } = await axios.put("/api/users/", {
+        name,
+        isSeller: !!store,
+      });
+
+      if (status !== 200) {
         return setOnSuccess(false);
       }
 
-      // Create seller profile
-      await axios.post("/api/sellers", {
-        name: store,
-        image: process.env.NEXT_PUBLIC_DEFAULT_STORE_IMAGE,
-        address: user?.walletAddress,
-      });
+      setOnSuccess(true);
     }
-
-    // Update user
-    const { status } = await axios.put("/api/users/", {
-      name,
-      isSeller: !!store,
-    });
-
-    if (status !== 200) {
-      return setOnSuccess(false);
-    }
-
-    mutate({ ...user!, name });
-    setOnSuccess(true);
   };
 
   // Form fields registration
@@ -113,6 +114,14 @@ const RegisterForm: FC<Props> = ({ user, mutate }) => {
   // Redirect on success
   useEffect(() => {
     if (onSuccess) {
+      // Reload session by replicating a different tab click
+      const reloadSession = () => {
+        const event = new Event("visibilitychange");
+        document.dispatchEvent(event);
+      };
+
+      reloadSession();
+
       setTimeout(() => {
         router.push("/");
       }, 3000);
@@ -150,7 +159,7 @@ const RegisterForm: FC<Props> = ({ user, mutate }) => {
         ? `Your ${
             isSeller ? "seller" : "buyer"
           } account was successfully created. You can start buying ${
-            isSeller && "and selling "
+            isSeller ? "and selling " : ""
           }items on the ${process.env.NEXT_PUBLIC_BRAND_NAME}`
         : "Your profile was successfully completed."
     }`,

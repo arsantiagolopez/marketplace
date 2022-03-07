@@ -27,13 +27,13 @@ const ListingPage: ProtectedPage<Props> = () => {
   );
   const { data: session } = useSession() as unknown as Session;
 
-  const listingTemplateProps = { session, sellerProfile, listing };
-
   // Fetch listing from contract
   const fetchListingById = async (id: number) => {
     const data = await getListingById(id);
     setListing(data);
   };
+
+  const listingTemplateProps = { session, sellerProfile, listing, setListing };
 
   useEffect(() => {
     fetchListingById(Number(query?.id));
@@ -42,7 +42,9 @@ const ListingPage: ProtectedPage<Props> = () => {
   return (
     <>
       <Head>
-        <title>Listing | {process.env.NEXT_PUBLIC_BRAND_NAME}</title>
+        <title>
+          {listing?.name} | {process.env.NEXT_PUBLIC_BRAND_NAME}
+        </title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>

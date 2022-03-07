@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { FC, useEffect, useState } from "react";
 import { AnimatedFox } from "../AnimatedFox";
@@ -53,19 +54,26 @@ const SignIn: FC<Props> = () => {
         You know what to do
       </h1>
 
-      <ConnectMetamask
-        ButtonComponent={
-          <button
-            disabled={isConnectingMetamask}
-            className="flex flex-row items-center justify-center font-Basic rounded-full bg-primary px-8 py-3 my-6 text-white w-auto hover:animate-pulse hover:bg-black"
-          >
-            <span className={`${metamaskError && "animate-pulse"}`}>
-              {metamaskButtonText}
-            </span>
-          </button>
-        }
-        {...connectMetamaskProps}
-      />
+      <div className="flex flex-col items-center justify-center w-full my-6">
+        <ConnectMetamask
+          ButtonComponent={
+            <button
+              disabled={isConnectingMetamask}
+              className="flex flex-row items-center justify-center font-Basic rounded-full bg-primary px-8 py-3 text-white w-auto hover:animate-pulse hover:bg-black"
+            >
+              <span className={`${metamaskError && "animate-pulse"}`}>
+                {metamaskButtonText}
+              </span>
+            </button>
+          }
+          {...connectMetamaskProps}
+        />
+        <Link href="/register">
+          <a className="font-Basic tracking-tight text-lg pt-4">
+            ...or register
+          </a>
+        </Link>
+      </div>
     </div>
   );
 };

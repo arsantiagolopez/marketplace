@@ -7,7 +7,7 @@ interface ContextState {
 }
 
 const PreferencesContext = createContext<ContextState>({
-  currency: process.env.NEXT_PUBLIC_PREFERRED_CURRENCY || "USD",
+  currency: process.env.NEXT_PUBLIC_PREFERRED_CURRENCY || "ETH",
   setCurrency: () => {},
   toggleCurrency: () => {},
 });

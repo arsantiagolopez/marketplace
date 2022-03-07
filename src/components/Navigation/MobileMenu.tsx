@@ -1,8 +1,15 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
-import React, { Dispatch, FC, Fragment, SetStateAction } from "react";
+import React, {
+  Dispatch,
+  FC,
+  Fragment,
+  SetStateAction,
+  useContext,
+} from "react";
 import { IoCloseSharp, IoMenuSharp } from "react-icons/io5";
+import { CartContext } from "../../context/CartContext";
 
 interface Props {
   isMenuOpen: boolean;
@@ -18,6 +25,8 @@ const MobileMenu: FC<Props> = ({
   isSeller,
 }) => {
   const handleSignOut = () => signOut();
+
+  const { cartCount } = useContext(CartContext);
 
   // @todo
   return (
@@ -61,6 +70,16 @@ const MobileMenu: FC<Props> = ({
                 </Link>
                 <Link href="/tokens">
                   <button className="tracking-tight">My tokens</button>
+                </Link>
+                <Link href="/cart">
+                  <button className="flex flex-row items-center font-Basic text-primary">
+                    Cart
+                    {cartCount ? (
+                      <div className="rounded-full text-xs text-white bg-primary w-6 ml-2 p-1">
+                        {cartCount}
+                      </div>
+                    ) : null}
+                  </button>
                 </Link>
 
                 {isProfileCompleted ? (

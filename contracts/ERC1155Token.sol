@@ -53,21 +53,6 @@ contract ERC1155Token is ERC1155 {
   }
 
   /**
-    @dev Destroy tokens.
-    @param _to User whose tokens should be destroyed.
-    @param _id Token ID to destroy.
-    @param _amount Quantity to destroy.
-   */
-  function burn(
-    address _to,
-    uint256 _id,
-    uint256 _amount
-  ) internal {
-    require(msg.sender == _to, "Not token owner.");
-    _burn(_to, _id, _amount);
-  }
-
-  /**
     @dev Create token of given quantity.
     @param _tokenURI Token name identifier.
     @param _quantity Amount of tokens to create.
@@ -95,5 +80,3 @@ contract ERC1155Token is ERC1155 {
     return tokenId;
   }
 }
-
-// @todo: Add MACRO properties to items: Protein, carbs, fats AS TO give any metaverse user that buys it an extension of health/life like video games

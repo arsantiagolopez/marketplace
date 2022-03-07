@@ -9,7 +9,7 @@ interface Props {}
 const TokensPage: ProtectedPage<Props> = () => (
   <>
     <Head>
-      <title>My Items | {process.env.NEXT_PUBLIC_BRAND_NAME}</title>
+      <title>My Tokens | {process.env.NEXT_PUBLIC_BRAND_NAME}</title>
       <link rel="icon" href="/favicon.ico" />
     </Head>
     <Layout>

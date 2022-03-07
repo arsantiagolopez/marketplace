@@ -12,7 +12,7 @@ import { ItemEntity, TokenEntity } from "../../types";
 import { readIPFSField } from "../../utils/readIPFSField";
 import { createToken } from "../ERC1155Token/createToken";
 
-interface CreateItemProps {
+interface Props {
   /* Price of item in @todo */
   price: string;
   /* Item name */
@@ -28,9 +28,10 @@ const createItem = async ({
   name,
   quantity,
   hash,
-}: CreateItemProps): Promise<ItemEntity> => {
+}: Props): Promise<ItemEntity> => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const signer = provider.getSigner();
+  const account = await window.ethereum.request({ method: "eth_accounts" });
+  const signer = provider.getSigner(account[0]);
 
   // Create ERC1155 Token
   const tokenId = await createToken({
@@ -66,8 +67,11 @@ const createItem = async ({
     ({ event }) => event === "ItemCreated"
   );
 
-  const [itemId, _, tokenContract, tokenHash, __, seller, owner]: Result =
+  let [itemId, _, tokenContract, tokenHash, __, seller]: Result =
     event?.args as TokenEntity[];
+
+  // Convert values to readable
+  itemId = itemId.toNumber();
 
   // Read values from IPFS metadata
   const image = await readIPFSField({ cid: tokenHash, property: "image" });
@@ -82,7 +86,6 @@ const createItem = async ({
       tokenHash,
       price,
       seller,
-      owner,
     },
   };
 

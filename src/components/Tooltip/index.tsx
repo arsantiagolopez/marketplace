@@ -42,7 +42,7 @@ const Tooltip: FC<Props> = ({ children, label, position, fitWidth }) => {
         {isOpen && (
           <Popover.Panel
             static
-            className={`z-50 absolute max-w-[50vw] text-ellipsis text-left flex items-center justify-center bg-primary text-white text-xs rounded-sm py-1 px-2 md:py-2 md:px-3 cursor-pointer ${
+            className={`z-40 absolute max-w-[50vw] text-ellipsis text-left flex items-center justify-center bg-primary text-white text-xs rounded-sm py-1 px-2 md:py-2 md:px-3 cursor-pointer ${
               !position
                 ? "left-full"
                 : position === "left"

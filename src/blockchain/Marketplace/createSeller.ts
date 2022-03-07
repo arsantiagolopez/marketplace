@@ -16,7 +16,8 @@ const createSeller = async (): Promise<boolean> => {
   let success = true;
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const signer = provider.getSigner();
+  const account = await window.ethereum.request({ method: "eth_accounts" });
+  const signer = provider.getSigner(account[0]);
   const walletAddress = await signer.getAddress();
 
   const marketplaceContract: Contract = new ethers.Contract(

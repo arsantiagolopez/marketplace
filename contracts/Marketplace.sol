@@ -22,10 +22,16 @@ contract Marketplace is ReentrancyGuard, Ownable {
   mapping(uint256 => Token) public tokens;
   mapping(uint256 => Item) public items;
   mapping(uint256 => Listing) public listings;
-  mapping(uint256 => Order) private orders;
+  mapping(uint256 => Order) public orders;
+
+  // Track tokenIds owned by users
+  mapping(address => mapping(uint256 => bool)) public userOwnsTokenId;
+  mapping(address => MyOwnedTokens) myOwnedTokenIds;
+
+  address[] public sellerAddressArr;
 
   constructor() {
-    // Initializes owner to msg.sender/admin
+    // Initializes admin to owner for possible upgrades
     admin = payable(msg.sender);
     version = 1;
     marketplaceStatus = true;
@@ -44,7 +50,6 @@ contract Marketplace is ReentrancyGuard, Ownable {
     string tokenHash;
     uint256 price;
     address payable seller;
-    address payable owner;
   }
 
   struct Item {
@@ -67,6 +72,10 @@ contract Marketplace is ReentrancyGuard, Ownable {
     uint256[] itemIds;
   }
 
+  struct MyOwnedTokens {
+    uint256[] tokenIds;
+  }
+
   // Events
 
   event SellerCreated(address sellerAddress, bool exists);
@@ -77,8 +86,7 @@ contract Marketplace is ReentrancyGuard, Ownable {
     address tokenContract,
     string tokenHash,
     uint256 price,
-    address payable seller,
-    address payable owner
+    address payable seller
   );
 
   event ListingCreated(
@@ -88,7 +96,6 @@ contract Marketplace is ReentrancyGuard, Ownable {
     string tokenHash,
     uint256 price,
     address payable seller,
-    address payable owner,
     bool isActive
   );
 
@@ -101,7 +108,7 @@ contract Marketplace is ReentrancyGuard, Ownable {
     uint256[] itemIds
   );
 
-  event ListingDeactivated(uint256 listingId);
+  event ListingStatusUpdated(uint256 listingId, bool isActive);
 
   event ItemPriceUpdated(uint256 itemId, uint256 price);
 
@@ -133,6 +140,8 @@ contract Marketplace is ReentrancyGuard, Ownable {
     require(!sellers[msg.sender].exists, "Seller already registered.");
 
     sellers[msg.sender] = Seller(msg.sender, true);
+
+    sellerAddressArr.push(msg.sender);
 
     emit SellerCreated(msg.sender, true);
   }
@@ -166,7 +175,6 @@ contract Marketplace is ReentrancyGuard, Ownable {
       _tokenContract,
       _tokenHash,
       _price,
-      payable(msg.sender),
       payable(msg.sender)
     );
 
@@ -179,7 +187,6 @@ contract Marketplace is ReentrancyGuard, Ownable {
       _tokenContract,
       _tokenHash,
       _price,
-      payable(msg.sender),
       payable(msg.sender)
     );
   }
@@ -213,7 +220,6 @@ contract Marketplace is ReentrancyGuard, Ownable {
       _tokenContract,
       _tokenHash,
       _price,
-      payable(msg.sender),
       payable(msg.sender)
     );
 
@@ -226,7 +232,6 @@ contract Marketplace is ReentrancyGuard, Ownable {
       _tokenContract,
       _tokenHash,
       _price,
-      payable(msg.sender),
       payable(msg.sender),
       true
     );
@@ -258,9 +263,6 @@ contract Marketplace is ReentrancyGuard, Ownable {
       // Make sure listings are active
       require(listings[id].isActive, "Listing isn't for sale.");
 
-      // Update listing status
-      listings[id].isActive = false;
-
       total += token.price;
 
       // Get seller & contract values
@@ -281,6 +283,8 @@ contract Marketplace is ReentrancyGuard, Ownable {
       total += token.price;
     }
 
+    console.log("*** Funds being sent & total: ", msg.sender, total);
+
     // Make sure submitted price matches the sum of all token prices
     require(msg.value == total, "Funds don't match total price.");
 
@@ -289,7 +293,7 @@ contract Marketplace is ReentrancyGuard, Ownable {
       Token memory token = orderTokens[i];
 
       // Make sure token isn't already yours
-      require(token.owner != msg.sender, "Can't buy own listing.");
+      require(token.seller != msg.sender, "Can't buy own listing.");
 
       // Make sure listings are all from the same seller
       require(token.seller == seller, "Listings from different sellers.");
@@ -303,8 +307,11 @@ contract Marketplace is ReentrancyGuard, Ownable {
         ""
       );
 
-      // Update token ownership
-      tokens[token.tokenId].owner = payable(msg.sender);
+      // Track tokens owned by users
+      if (!userOwnsTokenId[msg.sender][token.tokenId]) {
+        userOwnsTokenId[msg.sender][token.tokenId] = true;
+        myOwnedTokenIds[msg.sender].tokenIds.push(token.tokenId);
+      }
     }
 
     // Transfer total funds from buyer to seller
@@ -338,7 +345,7 @@ contract Marketplace is ReentrancyGuard, Ownable {
     @dev Set a listing status to inactive.
     @param _listingId Listing ID.
    */
-  function deactivateListing(uint256 _listingId)
+  function toggleListingStatus(uint256 _listingId)
     public
     nonReentrant
     isSeller
@@ -346,61 +353,34 @@ contract Marketplace is ReentrancyGuard, Ownable {
   {
     Listing memory listing = listings[_listingId];
 
-    // Only allow owner to update status
-    require(listing.token.seller == msg.sender, "Not owner of listing.");
-    // Make sure item inactive
-    require(listing.isActive, "Item already inactive.");
+    // Only allow seller to update status
+    require(listing.token.seller == msg.sender, "Not seller of listing.");
 
-    listing.isActive = false;
+    // Update listing instance
+    listings[_listingId].isActive = !listings[_listingId].isActive;
 
-    emit ListingDeactivated(_listingId);
+    emit ListingStatusUpdated(_listingId, !listing.isActive);
   }
 
   /**
-    @dev Updates the price of an item.
-    @param _itemId Item ID.
-    @param _price Updated item price.
+    @dev Get a list of addresses of all sellers in the platform.
    */
-  function updateItemPrice(uint256 _itemId, uint256 _price)
-    public
-    nonReentrant
-    isSeller
-  {
-    Item memory item = items[_itemId];
+  function getAllSellers() public view returns (address[] memory) {
+    uint256 totalSellers = sellerAddressArr.length;
 
-    // Only allow owner to update price
-    require(item.token.owner == msg.sender, "Not owner of listing.");
+    address[] memory allSellers = new address[](totalSellers);
 
-    item.token.price = _price;
+    for (uint256 i = 0; i < totalSellers; i++) {
+      allSellers[i] = sellerAddressArr[i];
+    }
 
-    emit ItemPriceUpdated(_itemId, _price);
-  }
-
-  /**
-    @dev Updates the price of a listing.
-    @param _listingId Listing ID.
-    @param _price Updated listing price.
-   */
-  function updateListingPrice(uint256 _listingId, uint256 _price)
-    public
-    nonReentrant
-    isSeller
-    isMarketplaceLive
-  {
-    Listing memory listing = listings[_listingId];
-
-    // Only allow owner to update price
-    require(listing.token.owner == msg.sender, "Not owner of listing.");
-
-    listing.token.price = _price;
-
-    emit ListingPriceUpdated(_listingId, _price);
+    return allSellers;
   }
 
   /**
     @dev Get a list of all available listings.
    */
-  function getMarketplaceListings() public view returns (Listing[] memory) {
+  function getAllListings() public view returns (Listing[] memory) {
     uint256 totalListings = listingCount.current();
     uint256 activeListingsLength = 0;
     uint256 activeListingsIndex = 0;
@@ -411,9 +391,9 @@ contract Marketplace is ReentrancyGuard, Ownable {
       }
     }
 
-    Listing[] memory activeListings = new Listing[](totalListings);
+    Listing[] memory activeListings = new Listing[](activeListingsLength);
 
-    for (uint256 i = 0; i < totalListings; i++) {
+    for (uint256 i = 0; i < activeListingsLength; i++) {
       if (listings[i].isActive) {
         activeListings[activeListingsIndex] = listings[i];
         activeListingsIndex++;
@@ -495,7 +475,8 @@ contract Marketplace is ReentrancyGuard, Ownable {
     uint256 myOrdersIndex = 0;
 
     for (uint256 i = 0; i < totalOrders; i++) {
-      bool isMyOrder = orders[i].buyer == msg.sender;
+      bool isMyOrder = orders[i].buyer == msg.sender ||
+        orders[i].seller == msg.sender;
 
       if (isMyOrder) {
         myOrdersLength++;
@@ -505,7 +486,8 @@ contract Marketplace is ReentrancyGuard, Ownable {
     Order[] memory myOrders = new Order[](myOrdersLength);
 
     for (uint256 i = 0; i < totalOrders; i++) {
-      bool isMyOrder = orders[i].buyer == msg.sender;
+      bool isMyOrder = orders[i].buyer == msg.sender ||
+        orders[i].seller == msg.sender;
 
       if (isMyOrder) {
         myOrders[myOrdersIndex] = orders[i];
@@ -517,71 +499,12 @@ contract Marketplace is ReentrancyGuard, Ownable {
   }
 
   /**
-    @dev Get a list of my sales history.
-    @return an array of sold orders.
+    @dev Get a list of my owned tokens.
+    @return an array of tokens.
    */
-  function getMySales() public view isSeller returns (Order[] memory) {
-    uint256 totalSales = orderCount.current();
-    uint256 mySalesLength = 0;
-    uint256 mySalesIndex = 0;
-
-    for (uint256 i = 0; i < totalSales; i++) {
-      bool isMySale = orders[i].seller == msg.sender;
-
-      if (isMySale) {
-        mySalesLength++;
-      }
-    }
-
-    Order[] memory mySales = new Order[](mySalesLength);
-
-    for (uint256 i = 0; i < totalSales; i++) {
-      bool isMySale = orders[i].buyer == msg.sender;
-
-      if (isMySale) {
-        mySales[mySalesIndex] = orders[i];
-        mySalesIndex++;
-      }
-    }
-
-    return mySales;
+  function getMyOwnedTokenIds() public view returns (uint256[] memory) {
+    return myOwnedTokenIds[msg.sender].tokenIds;
   }
-
-  /**
-    @dev Get a list of my purchased listings.
-    @return an array of purchased listings.
-   */
-  function getMyPurchasedListings() public view returns (Listing[] memory) {
-    uint256 totalListings = listingCount.current();
-    uint256 myListingsLength = 0;
-    uint256 myListingsIndex = 0;
-
-    for (uint256 i = 0; i < totalListings; i++) {
-      bool isOwnedByMe = listings[i].token.owner == msg.sender;
-      bool isSoldByMe = listings[i].token.seller == msg.sender;
-
-      if (isOwnedByMe && !isSoldByMe) {
-        myListingsLength++;
-      }
-    }
-
-    Listing[] memory myListings = new Listing[](myListingsLength);
-
-    for (uint256 i = 0; i < totalListings; i++) {
-      bool isOwnedByMe = listings[i].token.owner == msg.sender;
-      bool isSoldByMe = listings[i].token.seller == msg.sender;
-
-      if (isOwnedByMe && !isSoldByMe) {
-        myListings[myListingsIndex] = listings[i];
-        myListingsIndex++;
-      }
-    }
-
-    return myListings;
-  }
-
-  // Destroy functions
-  // Restock functions
 
   // Admin functions
 

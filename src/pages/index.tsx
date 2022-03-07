@@ -2,15 +2,15 @@ import type { NextPage } from "next";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import React from "react";
+import { Explore } from "../components/Explore";
 import { Landing } from "../components/Landing";
 import { Layout } from "../components/Layout";
-import { Marketplace } from "../components/Marketplace";
 
 const IndexPage: NextPage = () => {
   const { data: session, status } = useSession();
 
   const authenticated = session && status !== "loading";
-  const title = authenticated ? "Marketplace" : "Decentralized POS";
+  const title = authenticated ? "Explore" : "Marketplace";
 
   if (status !== "loading") {
     return (
@@ -21,7 +21,7 @@ const IndexPage: NextPage = () => {
           </title>
           <link rel="icon" href="/favicon.ico" />
         </Head>
-        <Layout>{authenticated ? <Marketplace /> : <Landing />}</Layout>
+        <Layout>{authenticated ? <Explore /> : <Landing />}</Layout>
       </>
     );
   }

@@ -43,7 +43,6 @@ export interface TokenEntity {
   tokenHash: string;
   price: string;
   seller: string;
-  owner: string;
 }
 
 export interface ItemEntity {
@@ -60,4 +59,15 @@ export interface ListingEntity {
   description: string;
   token: TokenEntity;
   isActive: boolean;
+}
+
+export interface OrderEntity {
+  orderId: number;
+  invoice: string;
+  seller: string;
+  buyer: string;
+  listingIds: number[];
+  itemIds?: number[];
+  name: string;
+  image: string;
 }

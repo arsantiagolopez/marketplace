@@ -19,12 +19,11 @@ const getUserSessionAndId = async ({
   req,
 }: Props): Promise<Response | undefined> => {
   const secret = process.env.SUPABASE_JWT_SECRET || "";
-  const session = (await getSession({ req })) as unknown as UserSession;
-
-  if (!session) return undefined;
 
   // Sub is the user's ID
   const { sub: userId } = (await getToken({ req, secret })) || {};
+
+  const session = (await getSession({ req })) as unknown as UserSession;
 
   return { userId, session };
 };

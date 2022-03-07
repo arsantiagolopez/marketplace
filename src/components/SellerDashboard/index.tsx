@@ -1,19 +1,16 @@
 import axios from "axios";
 import React, { FC, useState } from "react";
 import useSWR from "swr";
-import { ItemEntity, ListingEntity, SellerProfileEntity } from "../../types";
+import { SellerProfileEntity } from "../../types";
 import { ImageEditable } from "./ImageEditable";
 import { Items } from "./Items";
 import { Listings } from "./Listings";
 import { Orders } from "./Orders";
 import { StoreNameEditable } from "./StoreNameEditable";
 
-interface Props {
-  listings?: ListingEntity[];
-  items?: ItemEntity[];
-}
+interface Props {}
 
-const SellerDashboard: FC<Props> = ({ listings, items }) => {
+const SellerDashboard: FC<Props> = () => {
   const [isActiveUpdate, setIsActiveUpdate] = useState<boolean>(false);
   const [editableStoreName, setEditableStoreName] = useState<string>("");
   const [editableImage, setEditableImage] = useState<string>("");
@@ -66,9 +63,7 @@ const SellerDashboard: FC<Props> = ({ listings, items }) => {
     setEditableImage,
     image,
   };
-  const listingsProps = { listings };
-  const itemsProps = { items };
-  const ordersProps = { listings };
+  const ordersProps = { sellerProfile };
 
   return (
     <div className="flex flex-col w-full h-full bg-white pb-20">
@@ -84,11 +79,11 @@ const SellerDashboard: FC<Props> = ({ listings, items }) => {
       </div>
 
       <div className="md:mt-8 pt-12">
-        <Listings {...listingsProps} />
+        <Listings />
       </div>
 
       <div className="flex flex-row flex-wrap w-full pt-6 text-primary">
-        <Items {...itemsProps} />
+        <Items />
         <Orders {...ordersProps} />
       </div>
     </div>

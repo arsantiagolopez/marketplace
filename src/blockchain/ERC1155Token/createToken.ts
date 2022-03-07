@@ -10,7 +10,7 @@ import { Result } from "ethers/lib/utils";
 import ERC1155Token from "../../../artifacts/contracts/ERC1155Token.sol/ERC1155Token.json";
 import { TOKEN_ADDRESS } from "../../../config";
 
-interface CreateTokenProps {
+interface Props {
   signer: JsonRpcSigner;
   tokenURI: string;
   quantity: number;
@@ -27,7 +27,7 @@ const createToken = async ({
   signer,
   tokenURI,
   quantity,
-}: CreateTokenProps): Promise<number> => {
+}: Props): Promise<number> => {
   const tokenContract: Contract = new ethers.Contract(
     TOKEN_ADDRESS,
     ERC1155Token.abi,

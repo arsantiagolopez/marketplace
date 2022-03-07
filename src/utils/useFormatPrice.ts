@@ -18,7 +18,7 @@ const useFormatPrice = (price: string): Response => {
 
     // Round up to 2 decimals
     if (String(usd).includes(".")) {
-      usd = parseFloat(usd).toFixed(2);
+      usd = parseFloat(usd).toLocaleString();
     }
 
     // If rounded not exact, show estimate (~)

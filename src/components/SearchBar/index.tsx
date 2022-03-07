@@ -3,6 +3,7 @@ import React, {
   Dispatch,
   FC,
   SetStateAction,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -12,14 +13,15 @@ import { TypeSelect } from "./TypeSelect";
 interface Props {
   query: string | null;
   setQuery: Dispatch<SetStateAction<string | null>>;
+  setType: Dispatch<SetStateAction<string>>;
 }
 
-const SearchBar: FC<Props> = ({ query, setQuery }) => {
-  const [selected, setSelected] = useState<string>("seller");
+const SearchBar: FC<Props> = ({ query, setQuery, setType }) => {
+  const [selected, setSelected] = useState<string>("SELLERS");
 
   const inputRef = useRef(null);
 
-  const options: string[] = ["seller", "items"];
+  const options: string[] = ["SELLERS", "LISTINGS"];
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) =>
     setQuery(event.target.value);
@@ -34,6 +36,11 @@ const SearchBar: FC<Props> = ({ query, setQuery }) => {
       inputRef.current.focus();
     }
   };
+
+  // Update type on option selection
+  useEffect(() => {
+    setType(selected);
+  }, [selected]);
 
   const typeSelectProps = { options, selected, handleSelect };
 

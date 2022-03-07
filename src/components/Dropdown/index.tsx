@@ -5,11 +5,12 @@ import { IoChevronDownSharp } from "react-icons/io5";
 interface Props {
   Button: JSX.Element;
   Panel: JSX.Element;
+  isDefaultOpen?: boolean;
 }
 
-const Dropdown: FC<Props> = ({ Button, Panel }) => (
+const Dropdown: FC<Props> = ({ Button, Panel, isDefaultOpen }) => (
   <div className="flex flex-col w-full">
-    <Disclosure>
+    <Disclosure defaultOpen={isDefaultOpen}>
       {({ open }) => (
         <>
           <Disclosure.Button className="flex flex-row justify-between items-center">

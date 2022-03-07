@@ -1,19 +1,19 @@
 import type { NextPage } from "next";
+import { useSession } from "next-auth/react";
 import Head from "next/head";
 import React from "react";
-import useSWR from "swr";
 import { Layout } from "../components/Layout";
 import { RegisterForm } from "../components/RegisterForm";
-import { UserEntity, UserSession } from "../types";
+import { UserSession } from "../types";
 
 interface Session {
   data: UserSession;
 }
 
 const RegisterPage: NextPage = () => {
-  const { data: user, mutate } = useSWR<UserEntity, any>("/api/users");
+  const { data: session } = useSession() as unknown as Session;
 
-  const registerFormProps = { user, mutate };
+  const registerFormProps = { session };
 
   return (
     <>

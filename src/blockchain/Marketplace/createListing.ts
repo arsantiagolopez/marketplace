@@ -12,7 +12,7 @@ import { ListingEntity, TokenEntity } from "../../types";
 import { readIPFSField } from "../../utils/readIPFSField";
 import { createToken } from "../ERC1155Token";
 
-interface CreateListingProps {
+interface Props {
   /* Price of listing */
   price: string;
   /* Listing name */
@@ -28,9 +28,10 @@ const createListing = async ({
   name,
   quantity,
   hash,
-}: CreateListingProps): Promise<ListingEntity> => {
+}: Props): Promise<ListingEntity> => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const signer = provider.getSigner();
+  const account = await window.ethereum.request({ method: "eth_accounts" });
+  const signer = provider.getSigner(account[0]);
 
   // Create ERC1155 Token
   const tokenId = await createToken({
@@ -67,16 +68,11 @@ const createListing = async ({
     ({ event }) => event === "ListingCreated"
   );
 
-  const [
-    listingId,
-    _,
-    tokenContract,
-    tokenHash,
-    __,
-    seller,
-    owner,
-    isActive,
-  ]: Result = event?.args as TokenEntity[];
+  let [listingId, _, tokenContract, tokenHash, __, seller, isActive]: Result =
+    event?.args as TokenEntity[];
+
+  // Convert values to readable
+  listingId = listingId.toNumber();
 
   // Read values from IPFS metadata
   const image = await readIPFSField({ cid: tokenHash, property: "image" });
@@ -96,7 +92,6 @@ const createListing = async ({
       tokenHash,
       price,
       seller,
-      owner,
     },
     isActive,
   };

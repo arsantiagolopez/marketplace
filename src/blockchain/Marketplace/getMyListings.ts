@@ -12,11 +12,14 @@ const getMyListings = async (): Promise<ListingEntity[]> => {
   let listings: ListingEntity[] = [];
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const account = await window.ethereum.request({ method: "eth_accounts" });
+  console.log("* account: ", account);
+  const signer = provider.getSigner(account[0]);
 
   const marketplaceContract: Contract = new ethers.Contract(
     MARKETPLACE_ADDRESS,
     Marketplace.abi,
-    provider
+    signer
   );
 
   const data = await marketplaceContract.getMyListings();
@@ -27,7 +30,7 @@ const getMyListings = async (): Promise<ListingEntity[]> => {
 
   for (const listing of data) {
     let [listingId, token, isActive] = listing;
-    let [tokenId, tokenContract, tokenHash, price, seller, owner] = token;
+    let [tokenId, tokenContract, tokenHash, price, seller] = token;
 
     // Convert values to readable
     listingId = listingId.toNumber();
@@ -53,13 +56,14 @@ const getMyListings = async (): Promise<ListingEntity[]> => {
         tokenHash,
         price,
         seller,
-        owner,
       },
       isActive,
     };
 
     listings.push(newListing);
   }
+
+  console.log(listings);
 
   return listings;
 };

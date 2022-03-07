@@ -109,7 +109,7 @@ const CreateOrder: FC<Props> = ({ items, listings, mutate }) => {
   //   isOpen: onSuccess,
   //   setIsOpen: setOnSuccess,
   //   type: "success",
-  //   message: "Your listing was created successfully!",
+  //   message: "Your listing was successfully created!",
   // };
 
   // return (

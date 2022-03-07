@@ -8,7 +8,9 @@ import { readIPFSField } from "../../utils/readIPFSField";
  * Get listing by ID.
  * @returns a listing entity.
  */
-const getListingById = async (id: number): Promise<ListingEntity> => {
+const getListingById = async (
+  id: number
+): Promise<ListingEntity | undefined> => {
   let listing: ListingEntity | undefined;
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -22,7 +24,12 @@ const getListingById = async (id: number): Promise<ListingEntity> => {
   const data = await marketplaceContract.listings(id);
 
   let [listingId, token, isActive] = data;
-  let [tokenId, tokenContract, tokenHash, price, seller, owner] = token;
+  let [tokenId, tokenContract, tokenHash, price, seller] = token;
+
+  // Return undefined if listing doesn't exist
+  if (seller === "0x0000000000000000000000000000000000000000") {
+    return undefined;
+  }
 
   // Convert values to readable
   listingId = listingId.toNumber();
@@ -48,7 +55,6 @@ const getListingById = async (id: number): Promise<ListingEntity> => {
       tokenHash,
       price,
       seller,
-      owner,
     },
     isActive,
   };

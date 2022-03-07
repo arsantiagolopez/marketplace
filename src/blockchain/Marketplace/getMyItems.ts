@@ -27,7 +27,7 @@ const getMyItems = async (): Promise<ItemEntity[]> => {
 
   for (const item of data) {
     let [itemId, token] = item;
-    let [tokenId, tokenContract, tokenHash, price, seller, owner] = token;
+    let [tokenId, tokenContract, tokenHash, price, seller] = token;
 
     // Convert values to readable
     itemId = itemId.toNumber();
@@ -48,7 +48,6 @@ const getMyItems = async (): Promise<ItemEntity[]> => {
         tokenHash,
         price,
         seller,
-        owner,
       },
     };
 

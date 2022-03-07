@@ -1,6 +1,6 @@
 import Link from "next/link";
 import React, { FC } from "react";
-import { MdPlaylistAdd } from "react-icons/md";
+import { MdOutlinePause, MdPlaylistAdd } from "react-icons/md";
 import { useListings } from "../../utils/useListings";
 import { PriceLabel } from "./PriceLabel";
 
@@ -27,11 +27,18 @@ const Listings: FC<Props> = () => {
           </div>
         </Link>
 
-        {listings?.map(({ listingId, image, token: { price } }) => (
+        {listings?.map(({ listingId, image, isActive, token: { price } }) => (
           <Link key={listingId} href={`/listings/${listingId}`}>
-            <div className="relative flex flex-row justify-center h-56 md:h-80 w-full max-w-[10rem] md:max-w-[15rem] min-w-[10rem] md:min-w-[15rem] rounded-xl cursor-pointer shadow-xl hover:animate-pulse hover:opacity-90 overflow-hidden">
+            <div
+              className={`relative flex flex-row justify-center h-56 md:h-80 w-full max-w-[10rem] md:max-w-[15rem] min-w-[10rem] md:min-w-[15rem] rounded-xl cursor-pointer shadow-xl hover:animate-pulse hover:opacity-90 overflow-hidden ${
+                !isActive && "brightness-50 bg-gray-50"
+              }`}
+            >
               <img src={image} className="h-full w-full object-cover" />
               <PriceLabel price={price} />
+              {!isActive && (
+                <MdOutlinePause className="absolute top-[40%] font-Basic tracking-tight text-white text-5xl" />
+              )}
             </div>
           </Link>
         ))}

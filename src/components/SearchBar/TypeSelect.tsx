@@ -14,7 +14,7 @@ const TypeSelect: FC<Props> = ({ options, selected, handleSelect }) => (
     {({ open }) => (
       <div className="relative h-full flex items-center">
         <Listbox.Button className="flex justify-between items-center w-48 h-3/6 px-6 capitalize font-Basic text-xl text-secondary border-l-2 border-gray-100">
-          {selected}
+          {selected.toLowerCase()}
           <IoChevronDownSharp
             className={`transition-transform duration-300 ${
               open ? "transform -rotate-180" : ""
@@ -29,14 +29,14 @@ const TypeSelect: FC<Props> = ({ options, selected, handleSelect }) => (
           leaveFrom="transform scale-100 opacity-100"
           leaveTo="transform scale-95 opacity-0"
         >
-          <Listbox.Options className="absolute top-18 md:top-20 left-0 w-full overflow-auto text-base bg-white rounded-t-none rounded-b-md shadow-xl focus:outline-none sm:text-sm">
+          <Listbox.Options className="absolute top-16 md:top-20 left-0 w-full overflow-auto text-base bg-white rounded-t-none rounded-b-md shadow-xl focus:outline-none sm:text-sm">
             {options.map((option, index) => (
               <Listbox.Option key={index} value={option} className="">
                 {({ selected }) => (
-                  <li className="flex flex-row justify-between items-center active:bg-gray-200 hover:bg-gray-100 text-sm capitalize cursor-pointer py-3 px-5">
-                    {option}
+                  <p className="flex flex-row justify-between items-center active:bg-gray-200 hover:bg-gray-100 text-sm capitalize cursor-pointer py-3 px-5">
+                    {option.toLowerCase()}
                     {selected && <CgCheck className="text-lg" />}
-                  </li>
+                  </p>
                 )}
               </Listbox.Option>
             ))}
