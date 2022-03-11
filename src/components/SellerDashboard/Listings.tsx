@@ -27,7 +27,7 @@ const Listings: FC<Props> = () => {
           </div>
         </Link>
 
-        {listings?.map(({ listingId, image, isActive, token: { price } }) => (
+        {listings?.map(({ listingId, image, isActive, token: { prices } }) => (
           <Link key={listingId} href={`/listings/${listingId}`}>
             <div
               className={`relative flex flex-row justify-center h-56 md:h-80 w-full max-w-[10rem] md:max-w-[15rem] min-w-[10rem] md:min-w-[15rem] rounded-xl cursor-pointer shadow-xl hover:animate-pulse hover:opacity-90 overflow-hidden ${
@@ -35,7 +35,7 @@ const Listings: FC<Props> = () => {
               }`}
             >
               <img src={image} className="h-full w-full object-cover" />
-              <PriceLabel price={price} />
+              <PriceLabel prices={prices} />
               {!isActive && (
                 <MdOutlinePause className="absolute top-[40%] font-Basic tracking-tight text-white text-5xl" />
               )}

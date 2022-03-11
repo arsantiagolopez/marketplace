@@ -2,9 +2,17 @@
 
 import Link from "next/link";
 import React, { FC, useContext, useEffect, useState } from "react";
+import { CgCheck } from "react-icons/cg";
 import { getBalanceOfTokenById } from "../../blockchain";
 import { PreferencesContext } from "../../context/PreferencesContext";
-import { ListingEntity, SellerProfileEntity, UserSession } from "../../types";
+import {
+  ItemEntity,
+  ListingEntity,
+  SellerProfileEntity,
+  UserSession,
+} from "../../types";
+import { useEthPrice } from "../../utils/useEthPrice";
+import { usePrices } from "../../utils/usePrices";
 import { AddToCart } from "../AddToCart";
 import { Dropdown } from "../Dropdown";
 import { PriceTag } from "../PriceTag";
@@ -14,15 +22,24 @@ interface Props {
   session?: UserSession;
   sellerProfile?: SellerProfileEntity;
   listing?: ListingEntity;
+  items?: ItemEntity[];
+  allItems?: ItemEntity[];
 }
 
-const PublicListingView: FC<Props> = ({ session, sellerProfile, listing }) => {
-  const [quantity, setQuantity] = useState<number | null>(null);
+const PublicListingView: FC<Props> = ({
+  session,
+  sellerProfile,
+  listing,
+  items,
+  allItems,
+}) => {
+  const [quantity, setQuantity] = useState<number | undefined>(undefined);
+  const [selectItemIds, setSelectItemIds] = useState<number[]>([]);
 
   const { currency, toggleCurrency } = useContext(PreferencesContext);
 
   const { image, name, description, token } = listing || {};
-  const { tokenId, tokenContract, price } = token || {};
+  const { tokenId, tokenContract, prices } = token || {};
   const { name: sellerName, address: sellerAddress } = sellerProfile || {};
 
   const isProfileCompleted = session && !!session.user?.name;
@@ -35,10 +52,26 @@ const PublicListingView: FC<Props> = ({ session, sellerProfile, listing }) => {
     setQuantity(balance);
   };
 
-  let items = [];
+  // Add extras to listing
+  const handleAddToListing = (id: number) => {
+    if (selectItemIds && !selectItemIds.includes(id)) {
+      setSelectItemIds([...selectItemIds, id]);
+    } else if (selectItemIds && selectItemIds.includes(id)) {
+      const withoutSelected = selectItemIds.filter((item) => item !== id);
+      setSelectItemIds(withoutSelected);
+    }
+  };
+  const { ethRate } = useEthPrice();
 
-  const priceTagProps = { currency, price, isListing: true };
-  const addToCartProps = { listing, quantity };
+  const priceTagProps = {
+    currency,
+    prices,
+    isListing: true,
+    items,
+    selectItemIds,
+    ethRate: ethRate!,
+  };
+  const addToCartProps = { listing, quantity, selectItemIds };
 
   // Get token quantity
   useEffect(() => {
@@ -157,41 +190,53 @@ const PublicListingView: FC<Props> = ({ session, sellerProfile, listing }) => {
             <Dropdown
               Button={
                 <p className="font-Basic text-2xl tracking-tighter pb-4">
-                  Available extras
+                  Add extras
                 </p>
               }
               Panel={
                 <div className="flex flex-nowrap items-centerspace-x-2 overflow-x-scroll px-0 md:mx-[-1.25rem] md:px-5 pb-6">
-                  {items?.length ? (
-                    items?.map(({ id, name, image, price }) => (
-                      <Tooltip
-                        key={id}
-                        label={`${name} (+ ${
-                          currency === "USD"
-                            ? `$${price?.usd}`
-                            : `~${parseFloat(price?.eth || "").toFixed(6)} ETH`
-                        })`}
-                        position="center"
-                        fitWidth
-                      >
-                        <div
-                          className={`tooltip tooltip-bottom text-tertiary cursor-pointer hover:opacity-80 ${
-                            !image && "bg-gray-100 animate-pulse"
-                          }`}
+                  {(items?.length ? items : allItems)?.map(
+                    ({ itemId, name, image, token }) => {
+                      const { eth: itemEth, usd: itemUsd } = usePrices({
+                        currency,
+                        prices: token?.prices,
+                        ethRate: ethRate!,
+                      });
+
+                      const eth = itemEth;
+                      const usd = itemUsd;
+
+                      return (
+                        <Tooltip
+                          key={itemId}
+                          label={`Add ${name} (+ ${
+                            currency === "ETH" ? `${eth} ETH` : `$${usd}`
+                          })`}
+                          position="center"
+                          fitWidth
                         >
-                          {image && (
-                            <img
-                              src={image}
-                              className="object-cover rounded-lg w-14 h-14 min-w-[3.5rem]"
-                            />
-                          )}
-                        </div>
-                      </Tooltip>
-                    ))
-                  ) : (
-                    <p className="flex flex-row items-baseline text-tertiary text-sm">
-                      Seller hasn't listed any extras.
-                    </p>
+                          <div
+                            onClick={() => handleAddToListing(itemId)}
+                            className={`relative flex justify-center items-center tooltip tooltip-bottom text-tertiary cursor-pointer hover:opacity-80 ml-2 ${
+                              !image && "bg-gray-100 animate-pulse"
+                            }`}
+                          >
+                            {image && (
+                              <img
+                                src={image}
+                                className={`object-cover rounded-lg w-14 h-14 min-w-[3.5rem] ${
+                                  selectItemIds?.includes(itemId) &&
+                                  "brightness-[30%] bg-gray-50"
+                                }`}
+                              />
+                            )}
+                            {selectItemIds?.includes(itemId) && (
+                              <CgCheck className="z-10 absolute text-white text-3xl pointer-events-none animate-pulse" />
+                            )}
+                          </div>
+                        </Tooltip>
+                      );
+                    }
                   )}
                 </div>
               }

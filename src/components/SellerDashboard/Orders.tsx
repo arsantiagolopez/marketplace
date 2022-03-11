@@ -15,7 +15,7 @@ const Orders: FC<Props> = ({ sellerProfile }) => {
   const { address } = sellerProfile || {};
 
   const { currency, toggleCurrency } = useContext(PreferencesContext);
-  const { price: ethRate } = useEthPrice();
+  const { ethRate } = useEthPrice();
 
   const getFormattedPrice = (invoice: string): string => {
     const eth = invoice;
@@ -26,15 +26,16 @@ const Orders: FC<Props> = ({ sellerProfile }) => {
     else return usd(invoice);
   };
 
-  const fetchMyOrders = async () => {
-    const myOrders = await getMyOrders();
-    console.log("myOrders: ", myOrders);
+  const fetchMyOrders = async (rate: string) => {
+    const myOrders = await getMyOrders(rate);
     setOrders(myOrders);
   };
 
   useEffect(() => {
-    fetchMyOrders();
-  }, []);
+    if (ethRate) {
+      fetchMyOrders(ethRate);
+    }
+  }, [ethRate]);
 
   return (
     <div className="flex-auto min-w-full md:min-w-0 md:w-[60%] transition-all ease-in-out">
@@ -71,10 +72,10 @@ const Orders: FC<Props> = ({ sellerProfile }) => {
                   <p>
                     {action} for{" "}
                     <span className="flex flex-row items-center font-medium">
-                      {currency === "USD" ? (
-                        <span className="mx-1 select-none">$</span>
-                      ) : (
+                      {currency === "ETH" ? (
                         <img src="/currency/eth.png" className="h-5" />
+                      ) : (
+                        <span className="mx-1 select-none">$</span>
                       )}
                       {getFormattedPrice(invoice)}
                     </span>
@@ -96,10 +97,10 @@ const Orders: FC<Props> = ({ sellerProfile }) => {
                     {identifier} {soldByMe ? "sold to" : "bought from"} (
                     {shortAddress}) for{" "}
                     <span className="flex flex-row items-center">
-                      {currency === "USD" ? (
-                        <span className="mx-1 select-none">$</span>
-                      ) : (
+                      {currency === "ETH" ? (
                         <img src="/currency/eth.png" className="h-5" />
+                      ) : (
+                        <span className="mx-1 select-none">$</span>
                       )}
                       <span className="px-2">{getFormattedPrice(invoice)}</span>
                     </span>

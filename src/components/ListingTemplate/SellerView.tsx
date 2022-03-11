@@ -1,5 +1,3 @@
-// @todo: Check if session ? Allow to buy : show login button (take to login screen on click)
-
 import Link from "next/link";
 import React, {
   Dispatch,
@@ -9,13 +7,13 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { HiExternalLink } from "react-icons/hi";
 import { IoPauseSharp, IoPlaySharp } from "react-icons/io5";
 import { getBalanceOfTokenById } from "../../blockchain";
 import { toggleListingStatus } from "../../blockchain/Marketplace";
 import { PreferencesContext } from "../../context/PreferencesContext";
-import { ListingEntity, SellerProfileEntity } from "../../types";
-import { useItems } from "../../utils/useItems";
+import { ItemEntity, ListingEntity, SellerProfileEntity } from "../../types";
+import { useEthPrice } from "../../utils/useEthPrice";
+import { usePrices } from "../../utils/usePrices";
 import { Dropdown } from "../Dropdown";
 import { PriceTag } from "../PriceTag";
 import { Tooltip } from "../Tooltip";
@@ -24,29 +22,24 @@ interface Props {
   sellerProfile?: SellerProfileEntity;
   listing?: ListingEntity;
   setListing: Dispatch<SetStateAction<ListingEntity | undefined>>;
+  items?: ItemEntity[];
 }
 
 const SellerListingView: FC<Props> = ({
   sellerProfile,
   listing,
   setListing,
+  items,
 }) => {
   const [quantity, setQuantity] = useState<number | null>(null);
 
   const { currency, toggleCurrency } = useContext(PreferencesContext);
 
-  const { items } = useItems();
-
-  const {
-    token,
-    isActive,
-    name,
-    description,
-    image,
-    // items,
-  } = listing || {};
-  const { tokenId, tokenContract, price } = token || {};
+  const { token, isActive, name, description, image } = listing || {};
+  const { tokenId, tokenContract, prices } = token || {};
   const { name: sellerName, address: sellerAddress } = sellerProfile || {};
+
+  const { ethRate } = useEthPrice();
 
   const getTokenBalance = async (id: number) => {
     const balance = await getBalanceOfTokenById({ id });
@@ -63,7 +56,12 @@ const SellerListingView: FC<Props> = ({
     }
   };
 
-  const priceTagProps = { currency, price, isListing: true };
+  const priceTagProps = {
+    currency,
+    prices,
+    isListing: true,
+    ethRate: ethRate!,
+  };
 
   // Get token quantity
   useEffect(() => {
@@ -191,46 +189,50 @@ const SellerListingView: FC<Props> = ({
             <Dropdown
               Button={
                 <p className="font-Basic text-2xl tracking-tighter pb-4">
-                  Available extras
+                  Add extras
                 </p>
               }
               Panel={
                 <div className="flex flex-nowrap items-centerspace-x-2 overflow-x-scroll px-0 md:mx-[-1.25rem] md:px-5 pb-6">
                   {items?.length ? (
-                    items?.map(({ itemId, name, image, token: { price } }) => (
-                      <Tooltip
-                        key={itemId}
-                        label={`${name} (+ ${
-                          currency === "ETH"
-                            ? `~${parseFloat(String(price)).toFixed(6)} ETH`
-                            : `$${Number(price).toLocaleString()}`
-                        })`}
-                        position="center"
-                        fitWidth
-                      >
-                        <div
-                          className={`tooltip tooltip-bottom text-tertiary cursor-pointer hover:opacity-80 ${
-                            !image && "bg-gray-100 animate-pulse"
-                          }`}
+                    items?.map(({ itemId, name, image, token }) => {
+                      const { eth: itemEth, usd: itemUsd } = usePrices({
+                        currency,
+                        prices: token?.prices,
+                        ethRate: ethRate!,
+                      });
+
+                      const eth = itemEth;
+                      const usd = itemUsd;
+
+                      return (
+                        <Tooltip
+                          key={itemId}
+                          label={`Add ${name} (+ ${
+                            currency === "ETH" ? `${eth} ETH` : `$${usd}`
+                          })`}
+                          position="center"
+                          fitWidth
                         >
-                          {image && (
-                            <img
-                              src={image}
-                              className="object-cover rounded-lg w-14 h-14 min-w-[3.5rem]"
-                            />
-                          )}
-                        </div>
-                      </Tooltip>
-                    ))
+                          <div
+                            className={`tooltip tooltip-bottom text-tertiary cursor-pointer hover:opacity-80 ${
+                              !image && "bg-gray-100 animate-pulse"
+                            }`}
+                          >
+                            {image && (
+                              <img
+                                src={image}
+                                className="object-cover rounded-lg w-14 h-14 min-w-[3.5rem]"
+                              />
+                            )}
+                          </div>
+                        </Tooltip>
+                      );
+                    })
                   ) : (
                     <p className="flex flex-row items-baseline text-tertiary text-sm">
-                      No items listed.{" "}
-                      <Link href="/items/create">
-                        <span className="flex flex-row items-baseline ml-1 hover:underline hover:cursor-pointer">
-                          Create some{" "}
-                          <HiExternalLink className="text-xs text-gray-300 ml-1 mt-auto" />
-                        </span>
-                      </Link>
+                      No item selected. All items will be available for buyers
+                      to add.
                     </p>
                   )}
                 </div>

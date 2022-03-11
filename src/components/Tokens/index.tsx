@@ -1,59 +1,62 @@
 import Link from "next/link";
 import React, { FC, useEffect, useState } from "react";
-import { getBalanceOfTokenById } from "../../blockchain";
 import { getMyOwnedTokens } from "../../blockchain/Marketplace/getMyOwnedTokens";
-import { ListingEntity } from "../../types";
+import { ItemEntity, ListingEntity } from "../../types";
+import { useEthPrice } from "../../utils/useEthPrice";
 import { PriceLabel } from "../SellerDashboard/PriceLabel";
 
 interface Props {}
 
-interface ListingCard {
-  listing: ListingEntity;
-  quantity: number;
-}
-
 const Tokens: FC<Props> = () => {
-  const [cards, setCards] = useState<ListingCard[] | null>(null);
+  const [tokens, setTokens] = useState<(ListingEntity | ItemEntity)[] | null>(
+    null
+  );
   const [listings, setListings] = useState<ListingEntity[] | null>(null);
+  const [items, setItems] = useState<ItemEntity[] | null>(null);
 
-  const fetchMyTokens = async () => {
-    const tokens = await getMyOwnedTokens();
-    setListings(tokens);
+  const { ethRate } = useEthPrice();
+
+  const fetchMyTokens = async (rate: string) => {
+    const myTokens = await getMyOwnedTokens(rate);
+    setTokens(myTokens);
   };
 
-  const updateCardsWithQuantities = async () => {
-    if (listings) {
-      // No listings
-      if (listings.length === 0) {
-        setCards(null);
-      }
+  // Update listings and items state arrays
+  const categorizeTokens = async () => {
+    if (tokens) {
+      let listingsArr: ListingEntity[] = [];
+      let itemsArr: ItemEntity[] = [];
 
-      // Bundle up listings with their quantities
-      if (listings.length) {
-        let listingCards: ListingCard[] = [];
-
-        for await (const listing of listings) {
-          const {
-            token: { tokenId },
-          } = listing;
-          const quantity = await getBalanceOfTokenById({ id: tokenId });
-          listingCards.push({ listing, quantity });
+      tokens.map((token) => {
+        // Token is listing
+        if ("listingId" in token) {
+          return listingsArr.push(token as ListingEntity);
         }
 
-        setCards(listingCards);
-      }
+        // Token is item
+        if ("itemId" in token) {
+          return itemsArr.push(token as ItemEntity);
+        }
+      });
+
+      setListings(listingsArr);
+      setItems(itemsArr);
     }
   };
 
   // Get token quantity
   useEffect(() => {
-    fetchMyTokens();
-  }, []);
+    if (ethRate) {
+      fetchMyTokens(ethRate);
+    }
+  }, [ethRate]);
 
-  // Get quantity of listings
+  // Categorize tokens by listings or items
   useEffect(() => {
-    updateCardsWithQuantities();
-  }, [listings]);
+    if (tokens) {
+      categorizeTokens();
+    }
+  }, [tokens]);
 
   return (
     <div className="flex flex-col items-center w-full bg-white pb-20">
@@ -65,68 +68,95 @@ const Tokens: FC<Props> = () => {
         </h1>
       </div>
 
-      <div className="pt-[4rem] md:mt-[4rem] w-full bg-white grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6 px-4 md:px-20">
-        {cards?.map(
-          ({
-            listing: {
-              listingId,
-              name,
-              image,
-              description,
-              token: { price },
-            },
-            quantity,
-          }) => (
-            <Link key={listingId} href={`/tokens/${listingId}`}>
-              <div className="relative flex flex-col w-full text-primary hover:cursor-pointer group hover:animate-pulse">
-                {/* Card quantity multiplier */}
-                {quantity > 1 && (
-                  <div className="z-30 absolute top-4 right-2 flex items-center justify-center h-8 w-8 md:h-10 md:w-10 font-Basic text-xl md:text-2xl text-white tracking-tight rounded-full bg-primary">
-                    x{quantity}
-                  </div>
-                )}
+      {/* Listings */}
+      <div className="pt-[2rem] md:pt-[4rem] px-4 md:px-20 w-full">
+        <h1 className="text-3xl md:text-4xl font-Basic text-primary tracking-tighter py-6 md:py-12">
+          Listings
+        </h1>
 
-                {/* Top card */}
+        {listings ? (
+          <div className="w-full bg-white grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
+            {listings.map(
+              (
+                { listingId, name, image, description, token: { prices } },
+                index
+              ) => (
+                <Link key={index} href={`/tokens/${listingId}`}>
+                  <div className="relative flex flex-col w-full text-primary hover:cursor-pointer group hover:animate-pulse">
+                    <div className="z-20 relative flex flex-row justify-center w-full h-52 md:h-80 aspect-square bg-white rounded-lg shadow-lg overflow-hidden">
+                      <img
+                        src={image}
+                        alt={name}
+                        className="object-center object-cover w-full h-full group-hover:opacity-90"
+                      />
+                      <PriceLabel prices={prices} />
+                    </div>
+                    <div className="flex flex-col py-2">
+                      <h1 className="font-Basic text-xl font-bold tracking-tight capitalize">
+                        {name}
+                      </h1>
+                      {/* Tailwind multiline truncate fix */}
+                      <p className="text-tertiary leading-6 max-h-[3rem] ellipsis overflow-hidden">
+                        {description}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              )
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
+            {Array(5)
+              .fill(0)
+              .map((_, index) => (
+                <div key={index} className="w-full hover:cursor-pointer">
+                  <div className="w-full h-52 md:h-80 aspect-square bg-gray-100 rounded-lg shadow-lg animate-pulse"></div>
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
+
+      {/* Extras */}
+      <div className="py-[2rem] md:py-[3rem] px-4 md:px-20 w-full">
+        <h1 className="text-3xl md:text-4xl font-Basic text-primary tracking-tighter py-6 md:py-12">
+          Extras
+        </h1>
+
+        {items ? (
+          <div className="w-full bg-white grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
+            {items.map(({ name, image, token: { prices } }, index) => (
+              <div
+                key={index}
+                className="relative flex flex-col w-full text-primary group"
+              >
                 <div className="z-20 relative flex flex-row justify-center w-full h-52 md:h-80 aspect-square bg-white rounded-lg shadow-lg overflow-hidden">
                   <img
                     src={image}
                     alt={name}
                     className="object-center object-cover w-full h-full group-hover:opacity-90"
                   />
-                  <PriceLabel price={price} />
+                  <PriceLabel prices={prices} />
                 </div>
                 <div className="flex flex-col py-2">
                   <h1 className="font-Basic text-xl font-bold tracking-tight capitalize">
                     {name}
                   </h1>
-                  {/* Tailwind multiline truncate fix */}
-                  <p className="text-tertiary leading-6 max-h-[3rem] ellipsis overflow-hidden">
-                    {description}
-                  </p>
                 </div>
-
-                {/* Card overlap effect */}
-                {quantity > 1 && (
-                  <div className="z-10 absolute top-[0.35rem] right-[-0.35rem] w-full h-52 md:h-80 aspect-square rounded-lg shadow-lg overflow-hidden rotate-1">
-                    <img
-                      src={image}
-                      alt={name}
-                      className="object-center object-cover w-full h-full group-hover:opacity-90"
-                    />
-                  </div>
-                )}
-                {quantity > 2 && (
-                  <div className="absolute top-[0.75rem] right-[-0.75rem] w-full h-52 md:h-80 aspect-square rounded-lg shadow-lg overflow-hidden rotate-2">
-                    <img
-                      src={image}
-                      alt={name}
-                      className="object-center object-cover w-full h-full group-hover:opacity-90"
-                    />
-                  </div>
-                )}
               </div>
-            </Link>
-          )
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
+            {Array(5)
+              .fill(0)
+              .map((_, index) => (
+                <div key={index} className="w-full">
+                  <div className="w-full h-52 md:h-80 aspect-square bg-gray-100 rounded-lg shadow-lg animate-pulse"></div>
+                </div>
+              ))}
+          </div>
         )}
       </div>
     </div>

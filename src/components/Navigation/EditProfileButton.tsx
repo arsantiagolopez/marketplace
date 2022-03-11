@@ -147,7 +147,7 @@ const EditProfileButton: FC<Props> = ({
                     <input
                       disabled={true}
                       value={
-                        currency === "USD" ? "Dollars (USD)" : "Ethereum (ETH)"
+                        currency === "ETH" ? "Ethereum (ETH)" : "Dollars (USD)"
                       }
                       className="relative w-full py-1 md:py-1 pl-3 my-1 md:my-2 text-left rounded-md focus:outline-black border border-tertiary text-secondary"
                     />
@@ -156,10 +156,10 @@ const EditProfileButton: FC<Props> = ({
                       className="flex flex-row bg-green-500 items-center cursor-pointer group"
                     >
                       <span className="absolute right-6 inline-block my-1 py-1">
-                        {currency === "USD" ? (
-                          "💵"
-                        ) : (
+                        {currency === "ETH" ? (
                           <img src="/currency/eth.png" className="h-4" />
+                        ) : (
+                          "💵"
                         )}
                       </span>
                       <button type="button" className="absolute right-0">

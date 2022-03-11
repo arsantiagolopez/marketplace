@@ -13,8 +13,8 @@ import { readIPFSField } from "../../utils/readIPFSField";
 import { createToken } from "../ERC1155Token/createToken";
 
 interface Props {
-  /* Price of item in @todo */
-  price: string;
+  /* Price object with supported currencies */
+  prices: { eth: string; usd: string };
   /* Item name */
   name: string;
   /* Initial item stock */
@@ -24,7 +24,7 @@ interface Props {
 }
 
 const createItem = async ({
-  price,
+  prices,
   name,
   quantity,
   hash,
@@ -40,9 +40,12 @@ const createItem = async ({
     quantity,
   });
 
+  let { eth: price } = prices;
+
   // Max supported number of decimals is 9
   if (price.length > 11) {
     price = String(Number(price).toFixed(9));
+    prices = { ...prices, eth: price };
   }
 
   // Convert BigNumber to wei value
@@ -84,7 +87,7 @@ const createItem = async ({
       tokenId,
       tokenContract,
       tokenHash,
-      price,
+      prices,
       seller,
     },
   };

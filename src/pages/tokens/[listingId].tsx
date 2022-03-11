@@ -6,6 +6,7 @@ import { getListingById } from "../../blockchain/Marketplace/getListingById";
 import { Layout } from "../../components/Layout";
 import { TokenTemplate } from "../../components/TokenTemplate";
 import { ListingEntity, ProtectedPage, UserSession } from "../../types";
+import { useEthPrice } from "../../utils/useEthPrice";
 
 interface Props {}
 
@@ -20,15 +21,19 @@ const TokenPage: ProtectedPage<Props> = () => {
 
   const tokensTemplateProps = { session, listing };
 
+  const { ethRate } = useEthPrice();
+
   // Fetch listing from contract
-  const fetchListingById = async (id: number) => {
-    const data = await getListingById(id);
+  const fetchListingById = async (id: number, rate: string) => {
+    const data = await getListingById(id, rate);
     setListing(data);
   };
 
   useEffect(() => {
-    fetchListingById(Number(query?.listingId));
-  }, [query]);
+    if (ethRate) {
+      fetchListingById(Number(query?.listingId), ethRate);
+    }
+  }, [query, ethRate]);
 
   return (
     <>

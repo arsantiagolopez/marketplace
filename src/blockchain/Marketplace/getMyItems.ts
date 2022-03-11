@@ -12,11 +12,13 @@ const getMyItems = async (): Promise<ItemEntity[]> => {
   let items: ItemEntity[] = [];
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const account = await window.ethereum.request({ method: "eth_accounts" });
+  const signer = provider.getSigner(account[0]);
 
   const marketplaceContract: Contract = new ethers.Contract(
     MARKETPLACE_ADDRESS,
     Marketplace.abi,
-    provider
+    signer
   );
 
   const data = await marketplaceContract.getMyItems();

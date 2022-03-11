@@ -9,9 +9,9 @@ import { RiLoader4Line } from "react-icons/ri";
 import { createItem } from "../../blockchain";
 import { PreferencesContext } from "../../context/PreferencesContext";
 import { FileWithPreview, UserSession } from "../../types";
-import { getPriceData } from "../../utils/getPriceData";
 import { useEthPrice } from "../../utils/useEthPrice";
 import { useItems } from "../../utils/useItems";
+import { usePrices } from "../../utils/usePrices";
 import { CompletedCheck } from "../CompletedCheck";
 import { Dialog } from "../Dialog";
 import { DropzoneField } from "../DropzoneField";
@@ -44,7 +44,7 @@ const CreateItem: FC<Props> = ({ session }) => {
 
   const { items, setItems } = useItems();
 
-  const { price: ethRate } = useEthPrice();
+  const { ethRate } = useEthPrice();
 
   const { handleSubmit, register, watch, setValue } = useForm<FormData>();
 
@@ -54,7 +54,7 @@ const CreateItem: FC<Props> = ({ session }) => {
   const onSubmit = async (values: FormData) => {
     setIsLoading(true);
 
-    let { price, name, quantity } = values;
+    let { name, price, quantity } = values;
 
     name = name.toLowerCase();
 
@@ -66,8 +66,21 @@ const CreateItem: FC<Props> = ({ session }) => {
       return setIsLoading(false);
     }
 
-    // Get prices formatted for db
-    const prices = getPriceData({ currency, inputPrice: price, ethRate });
+    const { convertPrice } = usePrices({ ethRate });
+
+    let eth = "";
+    let usd = "";
+
+    // Convert supported currencies
+    if (currency === "ETH") {
+      eth = String(price);
+      usd = convertPrice(eth, "USD");
+    } else if (currency === "USD") {
+      usd = String(price);
+      eth = convertPrice(usd, "ETH");
+    }
+
+    const prices = { eth, usd };
 
     if (!file) {
       return setIsLoading(false);
@@ -94,7 +107,7 @@ const CreateItem: FC<Props> = ({ session }) => {
     try {
       // Create ERC1155Token & Marketplace item
       const item = await createItem({
-        price: prices?.eth!,
+        prices,
         name,
         quantity: parseInt(String(quantity)),
         hash,
@@ -151,6 +164,7 @@ const CreateItem: FC<Props> = ({ session }) => {
     validImageField,
     setValidImageField,
     validPriceField,
+    ethRate: ethRate!,
   };
   const successDialogProps = {
     isOpen: onSuccess,

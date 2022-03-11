@@ -1,16 +1,16 @@
 import { Contract, ethers } from "ethers";
 import Marketplace from "../../../artifacts/contracts/Marketplace.sol/Marketplace.json";
 import { MARKETPLACE_ADDRESS } from "../../../config";
-import { ListingEntity } from "../../types";
+import { ItemEntity } from "../../types";
 import { readIPFSField } from "../../utils/readIPFSField";
 import { usePrices } from "../../utils/usePrices";
 
 /**
- * Get all listings in the Marketplace.
- * @returns an array of listings.
+ * Get all the items in the Marketplace.
+ * @returns an array of items.
  */
-const getAllListings = async (ethRate: string): Promise<ListingEntity[]> => {
-  let listings: ListingEntity[] = [];
+const getAllItems = async (ethRate: string): Promise<ItemEntity[]> => {
+  let items: ItemEntity[] = [];
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
 
@@ -20,28 +20,24 @@ const getAllListings = async (ethRate: string): Promise<ListingEntity[]> => {
     provider
   );
 
-  const data = await marketplaceContract.getAllListings();
+  const data = await marketplaceContract.getAllItems();
 
   if (!data.length) {
-    return listings;
+    return items;
   }
 
-  for await (const listing of data) {
-    let [listingId, token, isActive] = listing;
+  for await (const item of data) {
+    let [itemId, token] = item;
     let [tokenId, tokenContract, tokenHash, price, seller] = token;
 
     // Convert values to readable
-    listingId = listingId.toNumber();
+    itemId = itemId.toNumber();
     tokenId = tokenId.toNumber();
     price = ethers.utils.formatUnits(String(price), "ether");
 
     // Read values from IPFS metadata
     const name = await readIPFSField({ cid: tokenHash, property: "name" });
     const image = await readIPFSField({ cid: tokenHash, property: "image" });
-    const description = await readIPFSField({
-      cid: tokenHash,
-      property: "description",
-    });
 
     // Convert price to PricesEntity
     const { convertPrice } = usePrices({ ethRate: ethRate! });
@@ -51,23 +47,10 @@ const getAllListings = async (ethRate: string): Promise<ListingEntity[]> => {
       usd: convertPrice(price, "USD"),
     };
 
-    // Get itemIds from each listing
-    const itemIdsData = await marketplaceContract.getListingItemIdsById(
-      listingId
-    );
-
-    let itemIds: number[] = [];
-
-    for (let itemId of itemIdsData) {
-      itemId = itemId.toNumber();
-      itemIds.push(itemId);
-    }
-
-    const newListing: ListingEntity = {
-      listingId,
+    const newItem: ItemEntity = {
+      itemId,
       name,
       image,
-      description,
       token: {
         tokenId,
         tokenContract,
@@ -75,14 +58,12 @@ const getAllListings = async (ethRate: string): Promise<ListingEntity[]> => {
         prices,
         seller,
       },
-      isActive,
-      itemIds,
     };
 
-    listings.push(newListing);
+    items.push(newItem);
   }
 
-  return listings;
+  return items;
 };
 
-export { getAllListings };
+export { getAllItems };

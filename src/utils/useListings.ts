@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { getMyListings } from "../blockchain";
 import { getAllListings } from "../blockchain/Marketplace/getAllListings";
 import { ListingEntity } from "../types";
+import { useEthPrice } from "./useEthPrice";
 
 interface Props {
   /* Get all Marketplace listings (defaults to own listings) */
@@ -16,6 +17,8 @@ interface Response {
 const useListings = ({ all }: Props = {}): Response => {
   const [listings, setListings] = useState<ListingEntity[] | null>(null);
 
+  const { ethRate } = useEthPrice();
+
   const pushInactiveToEnd = (arr: ListingEntity[]): ListingEntity[] => {
     const active = arr.filter(({ isActive }) => isActive);
     const inactive = arr.filter(({ isActive }) => !isActive);
@@ -24,17 +27,22 @@ const useListings = ({ all }: Props = {}): Response => {
 
   // Fetch my created listings from contract
   const fetchMyListings = async () => {
-    let listingsArray = await getMyListings();
+    if (ethRate) {
+      let listingsArray = await getMyListings(ethRate);
 
-    // Push inactive listings to end
-    listingsArray = pushInactiveToEnd(listingsArray);
+      // Push inactive listings to end
+      listingsArray = pushInactiveToEnd(listingsArray);
 
-    setListings(listingsArray);
+      setListings(listingsArray);
+    }
   };
 
+  // Fetch all existing listings in the Marketplace
   const fetchAllListings = async () => {
-    let listingsArray = await getAllListings();
-    setListings(listingsArray);
+    if (ethRate) {
+      let listingsArray = await getAllListings(ethRate);
+      setListings(listingsArray);
+    }
   };
 
   useEffect(() => {
@@ -43,7 +51,7 @@ const useListings = ({ all }: Props = {}): Response => {
     } else {
       fetchMyListings();
     }
-  }, []);
+  }, [ethRate]);
 
   return { listings, setListings };
 };

@@ -37,11 +37,16 @@ export interface ItemPriceEntity {
   itemId: string;
 }
 
+export interface PricesEntity {
+  eth: string;
+  usd: string;
+}
+
 export interface TokenEntity {
   tokenId: number;
   tokenContract: string;
   tokenHash: string;
-  price: string;
+  prices: PricesEntity;
   seller: string;
 }
 
@@ -59,6 +64,7 @@ export interface ListingEntity {
   description: string;
   token: TokenEntity;
   isActive: boolean;
+  itemIds: number[];
 }
 
 export interface OrderEntity {
@@ -70,4 +76,11 @@ export interface OrderEntity {
   itemIds?: number[];
   name: string;
   image: string;
+}
+
+export interface CartItem {
+  id: number;
+  listing: ListingEntity;
+  items: ItemEntity[];
+  quantity?: number;
 }

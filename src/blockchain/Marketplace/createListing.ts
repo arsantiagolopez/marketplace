@@ -8,30 +8,35 @@ import {
 import { Result } from "ethers/lib/utils";
 import Marketplace from "../../../artifacts/contracts/Marketplace.sol/Marketplace.json";
 import { MARKETPLACE_ADDRESS, TOKEN_ADDRESS } from "../../../config";
-import { ListingEntity, TokenEntity } from "../../types";
+import { ListingEntity, PricesEntity, TokenEntity } from "../../types";
 import { readIPFSField } from "../../utils/readIPFSField";
 import { createToken } from "../ERC1155Token";
 
 interface Props {
-  /* Price of listing */
-  price: string;
+  /* Price of supported currencies */
+  prices: PricesEntity;
   /* Listing name */
   name: string;
   /* Initial listing stock */
   quantity: number;
   /* IPFS metadata hash */
   hash: string;
+  /* Item IDs included with listing */
+  itemIds: number[];
 }
 
 const createListing = async ({
-  price,
+  prices,
   name,
   quantity,
   hash,
+  itemIds,
 }: Props): Promise<ListingEntity> => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const account = await window.ethereum.request({ method: "eth_accounts" });
   const signer = provider.getSigner(account[0]);
+
+  console.log("** itemIds passed down: ", itemIds);
 
   // Create ERC1155 Token
   const tokenId = await createToken({
@@ -40,9 +45,12 @@ const createListing = async ({
     quantity,
   });
 
+  let { eth: price } = prices;
+
   // Max supported number of decimals is 9
   if (price.length > 11) {
     price = String(Number(price).toFixed(9));
+    prices = { ...prices, eth: price };
   }
 
   // Convert BigNumber to wei value
@@ -59,7 +67,8 @@ const createListing = async ({
       tokenId,
       TOKEN_ADDRESS,
       hash,
-      weiPrice
+      weiPrice,
+      itemIds
     );
   const receipt: ContractReceipt = await transaction.wait();
 
@@ -90,10 +99,11 @@ const createListing = async ({
       tokenId,
       tokenContract,
       tokenHash,
-      price,
+      prices,
       seller,
     },
     isActive,
+    itemIds,
   };
 
   return listing;

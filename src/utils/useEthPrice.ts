@@ -10,7 +10,7 @@ interface Props {
 
 interface Response {
   /* Current ETH price rate */
-  price: string | null;
+  ethRate: string | null;
   /* Result of either convertUsdToEth or convertEthToUsd if ether passed */
   result: string | null;
 }
@@ -19,7 +19,7 @@ const useEthPrice = ({
   convertUsdToEth,
   convertEthToUsd,
 }: Props = {}): Response => {
-  const [price, setPrice] = useState<string | null>(null);
+  const [ethRate, setEthRate] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
 
   // Get current USD price rate for ETH
@@ -32,12 +32,12 @@ const useEthPrice = ({
       });
 
       if (status !== 200) {
-        return setPrice(null);
+        return setEthRate(null);
       }
 
       const { rates } = data?.data;
 
-      setPrice(rates["USD"]);
+      setEthRate(rates["USD"]);
     } catch (err) {
       console.log("Could not fetch ETH price from Coinbase's API.");
       return;
@@ -46,13 +46,13 @@ const useEthPrice = ({
 
   // Convert USD to ETH
   const usdToEth = (amount: number) => {
-    const ETH = parseFloat(price!) / amount;
+    const ETH = parseFloat(ethRate!) / amount;
     setResult(ETH.toString());
   };
 
   // Convert ETH to USD
   const ethToUsd = (amount: number) => {
-    const USD = amount * parseFloat(price!);
+    const USD = amount * parseFloat(ethRate!);
     setResult(USD.toString());
   };
 
@@ -62,13 +62,13 @@ const useEthPrice = ({
 
   // Get exchange rate if requested
   useEffect(() => {
-    if (price) {
+    if (ethRate) {
       if (convertUsdToEth) usdToEth(convertUsdToEth);
       if (convertEthToUsd) ethToUsd(convertEthToUsd);
     }
-  }, [price, convertUsdToEth, convertEthToUsd]);
+  }, [ethRate, convertUsdToEth, convertEthToUsd]);
 
-  return { price, result };
+  return { ethRate, result };
 };
 
 export { useEthPrice };

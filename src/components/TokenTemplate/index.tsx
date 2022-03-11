@@ -2,9 +2,9 @@ import React, { FC, useContext, useEffect, useState } from "react";
 import { getBalanceOfTokenById } from "../../blockchain";
 import { PreferencesContext } from "../../context/PreferencesContext";
 import { ListingEntity, UserSession } from "../../types";
-import { useFormatPrice } from "../../utils/useFormatPrice";
+import { useEthPrice } from "../../utils/useEthPrice";
+import { usePrices } from "../../utils/usePrices";
 import { Dropdown } from "../Dropdown";
-import { Tooltip } from "../Tooltip";
 
 interface Props {
   session?: UserSession;
@@ -18,11 +18,10 @@ const TokenTemplate: FC<Props> = ({ session, listing }) => {
 
   const { user } = session || {};
   const { image, name, description, token } = listing || {};
-  const { tokenId, tokenContract, price, seller } = token || {};
+  const { tokenId, tokenContract, prices, seller } = token || {};
 
-  const { usd, eth } = useFormatPrice(price!) || {};
-  const formattedPrice =
-    price && price !== "0" ? (currency === "ETH" ? eth : usd) : null;
+  const { ethRate } = useEthPrice();
+  const { usd, eth } = usePrices({ prices, currency, ethRate: ethRate! });
 
   const getTokenBalance = async (id: number) => {
     const balance = await getBalanceOfTokenById({
@@ -31,8 +30,6 @@ const TokenTemplate: FC<Props> = ({ session, listing }) => {
     });
     setQuantity(balance);
   };
-
-  let items = [];
 
   // Get token quantity
   useEffect(() => {
@@ -78,13 +75,21 @@ const TokenTemplate: FC<Props> = ({ session, listing }) => {
             )}
           </div>
 
-          {/* Quantity in stock */}
-          <div className="my-2 md:pb-3">
-            {quantity ? (
-              <h1 className="font-Basic text-xl tracking-tighter w-fit">
-                Quantity owned:
-                <span className="font-light px-2 text-tertiary">
-                  {quantity}
+          {/* Price bought for */}
+          <div onClick={toggleCurrency} className="w-fit my-2">
+            {prices ? (
+              <h1 className="flex flex-row items-center font-Basic text-xl tracking-tighter w-fit cursor-pointer">
+                Paid:
+                <span className="flex flex-row items-center text-tertiary ml-2">
+                  {currency === "ETH" ? (
+                    <img src="/currency/eth.png" className="h-5" />
+                  ) : (
+                    <span className="mx-1 select-none">$</span>
+                  )}
+                  <span className="font-light mr-1.5">
+                    {currency === "ETH" ? eth : usd}
+                  </span>
+                  {quantity && quantity > 1 ? "per token" : null}
                 </span>
               </h1>
             ) : (
@@ -92,19 +97,13 @@ const TokenTemplate: FC<Props> = ({ session, listing }) => {
             )}
           </div>
 
-          {/* Price bought for */}
-          <div onClick={toggleCurrency} className="w-fit pb-4">
-            {price ? (
-              <h1 className="flex flex-row items-center font-Basic text-xl tracking-tighter w-fit cursor-pointer">
-                Paid:
-                <span className="flex flex-row items-center text-tertiary ml-2">
-                  {currency === "USD" ? (
-                    <span className="mx-1 select-none">$</span>
-                  ) : (
-                    <img src="/currency/eth.png" className="h-5" />
-                  )}
-                  <span className="font-light px-2">{formattedPrice}</span>
-                  {quantity && quantity > 1 ? "per token" : null}
+          {/* Quantity in stock */}
+          <div className="md:pb-4">
+            {quantity ? (
+              <h1 className="font-Basic text-xl tracking-tighter w-fit">
+                Tokens owned:
+                <span className="font-light px-2 text-tertiary">
+                  {quantity}
                 </span>
               </h1>
             ) : (
@@ -141,50 +140,6 @@ const TokenTemplate: FC<Props> = ({ session, listing }) => {
                     </span>
                     {tokenId}
                   </p>
-                </div>
-              }
-            />
-
-            {/* Extras */}
-            <Dropdown
-              Button={
-                <p className="font-Basic text-2xl tracking-tighter pb-4">
-                  Extras
-                </p>
-              }
-              Panel={
-                <div className="flex flex-nowrap items-centerspace-x-2 overflow-x-scroll px-0 md:mx-[-1.25rem] md:px-5 pb-6">
-                  {items?.length ? (
-                    items?.map(({ id, name, image, price }) => (
-                      <Tooltip
-                        key={id}
-                        label={`${name} (+ ${
-                          currency === "USD"
-                            ? `$${price?.usd}`
-                            : `~${parseFloat(price?.eth || "").toFixed(6)} ETH`
-                        })`}
-                        position="center"
-                        fitWidth
-                      >
-                        <div
-                          className={`tooltip tooltip-bottom text-tertiary cursor-pointer hover:opacity-80 ${
-                            !image && "bg-gray-100 animate-pulse"
-                          }`}
-                        >
-                          {image && (
-                            <img
-                              src={image}
-                              className="object-cover rounded-lg w-14 h-14 min-w-[3.5rem]"
-                            />
-                          )}
-                        </div>
-                      </Tooltip>
-                    ))
-                  ) : (
-                    <p className="flex flex-row items-baseline text-tertiary text-sm">
-                      Seller hasn't listed any extras.
-                    </p>
-                  )}
                 </div>
               }
             />

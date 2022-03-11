@@ -6,50 +6,70 @@ import { IoTrashOutline } from "react-icons/io5";
 import { createOrder } from "../../blockchain/Marketplace/createOrder";
 import { CartContext } from "../../context/CartContext";
 import { PreferencesContext } from "../../context/PreferencesContext";
-import { ListingEntity } from "../../types";
+import { CartItem } from "../../types";
+import { getSecretEmoji } from "../../utils/getSecretEmoji";
 import { useEthPrice } from "../../utils/useEthPrice";
+import { usePrices } from "../../utils/usePrices";
 import { Dialog } from "../Dialog";
 import { PriceLabel } from "../SellerDashboard/PriceLabel";
 
 interface Props {}
 
-interface ListingCard {
-  listing: ListingEntity;
-  quantity: number;
-}
-
 const CartTemplate: FC<Props> = () => {
   const [onSuccess, setOnSuccess] = useState<boolean>(false);
-  const [cards, setCards] = useState<ListingCard[] | null>(null);
+  const [cards, setCards] = useState<CartItem[] | null>(null);
 
   const router = useRouter();
 
-  const { cartCount, cartListings, cleanCart } = useContext(CartContext);
+  const { cartCount, cartItems, cleanCart } = useContext(CartContext);
 
   const { currency } = useContext(PreferencesContext);
-  const { price: ethRate } = useEthPrice();
 
-  const formattedEth = (price: string): string => {
-    return parseFloat(price).toFixed(6);
-  };
+  const { ethRate } = useEthPrice();
 
-  const formattedUsd = (price: string): string => {
-    return parseFloat(price).toLocaleString();
+  // Check item name, return emoji instead of name if name contains emoji keyword
+  const getNameOrEmoji = (name: string): string => getSecretEmoji(name) || name;
+
+  const getFormattedPrice = (price: string): string => {
+    return currency === "ETH" ? `${price} ETH` : `$${price}`;
   };
 
   const subtotal = cards
-    ? cards.map(({ listing, quantity }) => {
+    ? cards.map(({ listing, items, quantity }) => {
         const { name, token } = listing;
-        const { price } = token;
+        const { prices } = token;
 
-        const eth = formattedEth(price);
-        const usd = formattedUsd(String(Number(price) * Number(ethRate)));
+        const { eth, usd } = usePrices({
+          currency,
+          prices,
+          ethRate: ethRate!,
+        });
 
-        return `(${quantity}) ${name} @ ${
-          currency === "ETH"
-            ? `${Number(eth).toLocaleString()} ETH`
-            : `$${Number(usd).toLocaleString()}`
-        }`;
+        const itemsStringIdentidier = items?.length
+          ? items
+              .map(({ name, token: { prices } }, index) => {
+                const { eth, usd } = usePrices({
+                  currency,
+                  prices,
+                  ethRate: ethRate!,
+                });
+
+                let price = currency === "ETH" ? eth : usd;
+
+                const str = `${getNameOrEmoji(name)} @ ${getFormattedPrice(
+                  price
+                )}`;
+
+                if (!index) return ` + ${str}`;
+                return str;
+              })
+              .join(" + ")
+          : "";
+
+        const signedPrice = getFormattedPrice(currency === "ETH" ? eth : usd);
+        const receipt = `(${quantity}) ${name} @ ${signedPrice}${itemsStringIdentidier}`;
+
+        return receipt;
       })
     : null;
 
@@ -58,17 +78,50 @@ const CartTemplate: FC<Props> = () => {
         .reduce((acc, card) => {
           let {
             listing: {
-              token: { price },
+              token: { prices },
             },
+            items,
             quantity,
           } = card;
 
-          const eth = formattedEth(price);
-          const usd = formattedUsd(String(Number(price) * Number(ethRate)));
+          let { eth, usd } = usePrices({
+            currency,
+            prices,
+            ethRate: ethRate!,
+          });
 
-          price = currency === "ETH" ? eth : usd;
+          // Remove commas to perform operations
+          usd = usd.replace(",", "");
 
-          const total = Number(price) * quantity;
+          let price = currency === "ETH" ? eth : usd;
+
+          let itemTotal: number = 0;
+
+          // Account for extras prices
+          if (items?.length) {
+            itemTotal = items.reduce((itemsAcc, item) => {
+              let {
+                token: { prices: itemPrices },
+              } = item;
+
+              let { eth: itemEth, usd: itemUsd } = usePrices({
+                currency,
+                prices: itemPrices,
+                ethRate: ethRate!,
+              });
+
+              // Remove commas to perform operations
+              itemUsd = itemUsd.replace(",", "");
+
+              let price = currency === "ETH" ? itemEth : itemUsd;
+
+              return itemsAcc + parseFloat(price);
+            }, 0);
+
+            price = String(parseFloat(price) + itemTotal);
+          }
+
+          const total = parseFloat(price) * quantity!;
           return acc + total;
         }, 0)
         .toLocaleString()
@@ -77,14 +130,35 @@ const CartTemplate: FC<Props> = () => {
   // Create marketplace order
   const handleBuyNow = async () => {
     // Calculate accurate total price
-    const total = cartListings.reduce((acc, card) => {
+    const ethTotal = cartItems.reduce((acc, card) => {
       const {
-        token: { price },
+        listing: {
+          token: { prices },
+        },
+        items,
+        quantity,
       } = card;
-      return acc + Number(price);
+
+      let itemTotal: number = 0;
+
+      // Account for extras prices
+      if (items?.length) {
+        itemTotal = items.reduce((itemsAcc, item) => {
+          let {
+            token: { prices: itemPrices },
+          } = item;
+          return itemsAcc + parseFloat(itemPrices?.eth);
+        }, 0);
+      }
+
+      const price =
+        (parseFloat(prices?.eth) + parseFloat(String(itemTotal))) * quantity!;
+
+      return acc + price;
     }, 0);
 
-    const order = await createOrder({ listings: cartListings, total });
+    // Make transaction
+    await createOrder({ cartItems, total: ethTotal });
 
     // On success
     setOnSuccess(true);
@@ -109,19 +183,8 @@ const CartTemplate: FC<Props> = () => {
     }
 
     // Bundle up listings with their quantities
-    if (cartListings.length) {
-      const uniqueListings = [
-        ...new Map(cartListings.map((obj) => [obj.listingId, obj])).values(),
-      ];
-
-      const uniqueCards = uniqueListings.map((listing) => {
-        const quantity = cartListings.filter(
-          ({ listingId }) => listingId === listing.listingId
-        ).length;
-        return { listing, quantity };
-      });
-
-      setCards(uniqueCards);
+    if (cartItems.length) {
+      setCards(cartItems);
     }
   }, [cartCount]);
 
@@ -167,20 +230,24 @@ const CartTemplate: FC<Props> = () => {
           </div>
         ) : (
           cards?.map(
-            ({
-              listing: {
-                listingId,
-                name,
-                image,
-                description,
-                token: { price },
+            (
+              {
+                listing: {
+                  listingId,
+                  name,
+                  image,
+                  description,
+                  token: { prices },
+                },
+                items,
+                quantity,
               },
-              quantity,
-            }) => (
-              <Link key={listingId} href={`/listings/${listingId}`}>
+              index
+            ) => (
+              <Link key={index} href={`/listings/${listingId}`}>
                 <div className="relative flex flex-col w-[49%] md:w-[19%] text-primary hover:cursor-pointer group hover:animate-pulse">
                   {/* Card quantity multiplier */}
-                  {quantity > 1 && (
+                  {quantity && quantity > 1 && (
                     <div className="z-30 absolute top-4 right-2 flex items-center justify-center h-8 w-8 md:h-10 md:w-10 font-Basic text-xl md:text-2xl text-white tracking-tight rounded-full bg-primary">
                       x{quantity}
                     </div>
@@ -193,11 +260,15 @@ const CartTemplate: FC<Props> = () => {
                       alt={name}
                       className="object-center object-cover w-full h-full group-hover:opacity-90"
                     />
-                    <PriceLabel price={price} />
+                    <PriceLabel prices={prices} />
                   </div>
                   <div className="flex flex-col py-2">
                     <h1 className="font-Basic text-xl font-bold tracking-tight capitalize">
-                      {name}
+                      {name}{" "}
+                      {items?.length &&
+                        `with ${items[0].name} ${
+                          items?.length > 1 ? "and others..." : ""
+                        }`}
                     </h1>
                     {/* Tailwind multiline truncate fix */}
                     <p className="text-tertiary leading-6 max-h-[3rem] ellipsis overflow-hidden">
@@ -206,7 +277,7 @@ const CartTemplate: FC<Props> = () => {
                   </div>
 
                   {/* Card overlap effect */}
-                  {quantity > 1 && (
+                  {quantity && quantity > 1 && (
                     <div className="z-10 absolute top-[0.5rem] right-[-0.5rem] w-full h-52 md:h-80 aspect-square rounded-lg shadow-lg overflow-hidden rotate-2">
                       <img
                         src={image}
@@ -215,7 +286,7 @@ const CartTemplate: FC<Props> = () => {
                       />
                     </div>
                   )}
-                  {quantity > 2 && (
+                  {quantity && quantity > 2 && (
                     <div className="absolute top-[1rem] right-[-1rem] w-full h-52 md:h-80 aspect-square rounded-lg shadow-lg overflow-hidden rotate-3">
                       <img
                         src={image}
@@ -243,10 +314,10 @@ const CartTemplate: FC<Props> = () => {
       <div className="flex flex-row justify-between px-6 md:px-20 py-2">
         <p className="font-Basic text-2xl text-primary tracking-tight">Total</p>
         <p className="flex flex-row items-center font-Basic text-2xl text-primary tracking-tight">
-          {currency === "USD" ? (
-            <span className="mx-1 mr-2 select-none">$</span>
-          ) : (
+          {currency === "ETH" ? (
             <img src="/currency/eth.png" className="h-5 mr-1" />
+          ) : (
+            <span className="mx-1 mr-2 select-none">$</span>
           )}
           {total ? total : "-"}
         </p>

@@ -1,19 +1,19 @@
 import { Contract, ethers } from "ethers";
 import Marketplace from "../../../artifacts/contracts/Marketplace.sol/Marketplace.json";
 import { MARKETPLACE_ADDRESS } from "../../../config";
-import { ListingEntity } from "../../types";
+import { ItemEntity } from "../../types";
 import { readIPFSField } from "../../utils/readIPFSField";
 import { usePrices } from "../../utils/usePrices";
 
 /**
- * Get listing by ID.
- * @returns a listing entity.
+ * Get item by ID.
+ * @returns an item entity.
  */
-const getListingById = async (
+const getItemById = async (
   id: number,
   ethRate: string
-): Promise<ListingEntity | undefined> => {
-  let listing: ListingEntity | undefined;
+): Promise<ItemEntity | undefined> => {
+  let item: ItemEntity | undefined;
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
 
@@ -23,36 +23,24 @@ const getListingById = async (
     provider
   );
 
-  const data = await marketplaceContract.listings(id);
-  const itemIdsData = await marketplaceContract.getListingItemIdsById(id);
+  const data = await marketplaceContract.items(id);
 
-  let [listingId, token, isActive] = data;
+  let [itemId, token] = data;
   let [tokenId, tokenContract, tokenHash, price, seller] = token;
 
-  // Return undefined if listing doesn't exist
+  // Return undefined if item doesn't exist
   if (seller === "0x0000000000000000000000000000000000000000") {
     return undefined;
   }
 
   // Convert values to readable
-  listingId = listingId.toNumber();
+  itemId = itemId.toNumber();
   tokenId = tokenId.toNumber();
   price = ethers.utils.formatUnits(String(price), "ether");
-
-  let itemIds: number[] = [];
-
-  for (let itemId of itemIdsData) {
-    itemId = itemId.toNumber();
-    itemIds.push(itemId);
-  }
 
   // Read values from IPFS metadata
   const name = await readIPFSField({ cid: tokenHash, property: "name" });
   const image = await readIPFSField({ cid: tokenHash, property: "image" });
-  const description = await readIPFSField({
-    cid: tokenHash,
-    property: "description",
-  });
 
   // Convert price to PricesEntity
   const { convertPrice } = usePrices({ ethRate: ethRate! });
@@ -62,11 +50,10 @@ const getListingById = async (
     usd: convertPrice(price, "USD"),
   };
 
-  listing = {
-    listingId,
+  item = {
+    itemId,
     name,
     image,
-    description,
     token: {
       tokenId,
       tokenContract,
@@ -74,11 +61,9 @@ const getListingById = async (
       prices,
       seller,
     },
-    isActive,
-    itemIds,
-  } as ListingEntity;
+  } as ItemEntity;
 
-  return listing;
+  return item;
 };
 
-export { getListingById };
+export { getItemById };

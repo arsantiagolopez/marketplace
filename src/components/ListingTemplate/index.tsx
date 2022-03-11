@@ -1,6 +1,11 @@
 import { useRouter } from "next/router";
 import React, { Dispatch, FC, SetStateAction, useEffect } from "react";
-import { ListingEntity, SellerProfileEntity, UserSession } from "../../types";
+import {
+  ItemEntity,
+  ListingEntity,
+  SellerProfileEntity,
+  UserSession,
+} from "../../types";
 import { PublicListingView } from "./PublicView";
 import { SellerListingView } from "./SellerView";
 
@@ -9,6 +14,8 @@ interface Props {
   sellerProfile?: SellerProfileEntity;
   listing?: ListingEntity;
   setListing: Dispatch<SetStateAction<ListingEntity | undefined>>;
+  items?: ItemEntity[];
+  allItems?: ItemEntity[];
 }
 
 const ListingTemplate: FC<Props> = ({
@@ -16,13 +23,20 @@ const ListingTemplate: FC<Props> = ({
   sellerProfile,
   listing,
   setListing,
+  items,
+  allItems,
 }) => {
   const isSellerView = session?.user?.walletAddress === listing?.token.seller;
 
   const router = useRouter();
 
-  const sellerViewProps = { sellerProfile, listing, setListing };
-  const publicViewProps = { session, sellerProfile, listing };
+  const sellerViewProps = {
+    sellerProfile,
+    listing,
+    setListing,
+    items,
+  };
+  const publicViewProps = { session, sellerProfile, listing, items, allItems };
 
   // Listing doesn't exist, redirect to explore page
   useEffect(() => {

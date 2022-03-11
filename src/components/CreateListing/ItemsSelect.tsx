@@ -81,10 +81,10 @@ const ItemsSelect: FC<Props> = ({ items, selectItemIds, setSelectItemIds }) => {
           <Disclosure.Panel className="w-full">
             <div
               className={`w-full overflow-scroll max-h-[60vh] ${
-                items ? "grid grid-cols-3 gap-3 py-4" : "pt-4"
+                items?.length ? "grid grid-cols-3 gap-3 py-4" : "pt-4"
               }`}
             >
-              {items ? (
+              {items?.length ? (
                 items.map(({ itemId, image }) => (
                   <div
                     key={itemId}

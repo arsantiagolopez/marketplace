@@ -61,6 +61,7 @@ contract Marketplace is ReentrancyGuard, Ownable {
     uint256 listingId;
     Token token;
     bool isActive;
+    uint256[] itemIds;
   }
 
   struct Order {
@@ -96,7 +97,8 @@ contract Marketplace is ReentrancyGuard, Ownable {
     string tokenHash,
     uint256 price,
     address payable seller,
-    bool isActive
+    bool isActive,
+    uint256[] itemIds
   );
 
   event OrderCreated(
@@ -197,12 +199,14 @@ contract Marketplace is ReentrancyGuard, Ownable {
     @param _tokenContract Unique token contract address.
     @param _tokenHash IPFS hash containing image & metadata.
     @param _price Listing price.
+    @param _itemIds Extra item IDs.
    */
   function createListing(
     uint256 _tokenId,
     address _tokenContract,
     string memory _tokenHash,
-    uint256 _price
+    uint256 _price,
+    uint256[] memory _itemIds
   )
     public
     isSeller
@@ -224,7 +228,7 @@ contract Marketplace is ReentrancyGuard, Ownable {
     );
 
     tokens[_tokenId] = newToken;
-    listings[listingId] = Listing(listingId, newToken, true);
+    listings[listingId] = Listing(listingId, newToken, true, _itemIds);
 
     emit ListingCreated(
       listingId,
@@ -233,7 +237,8 @@ contract Marketplace is ReentrancyGuard, Ownable {
       _tokenHash,
       _price,
       payable(msg.sender),
-      true
+      true,
+      _itemIds
     );
   }
 
@@ -404,6 +409,21 @@ contract Marketplace is ReentrancyGuard, Ownable {
   }
 
   /**
+    @dev Get a list of all created items.
+   */
+  function getAllItems() public view returns (Item[] memory) {
+    uint256 totalItems = itemCount.current();
+
+    Item[] memory allItems = new Item[](totalItems);
+
+    for (uint256 i = 0; i < totalItems; i++) {
+      allItems[i] = items[i];
+    }
+
+    return allItems;
+  }
+
+  /**
     @dev Get a list of my created items.
     @return an array of items.
    */
@@ -420,6 +440,8 @@ contract Marketplace is ReentrancyGuard, Ownable {
       }
     }
 
+    console.log("item length: ", myItemsLength);
+
     Item[] memory myItems = new Item[](myItemsLength);
 
     for (uint256 i = 0; i < totalItems; i++) {
@@ -430,6 +452,8 @@ contract Marketplace is ReentrancyGuard, Ownable {
         myItemsIndex++;
       }
     }
+
+    console.log("myItems.length: ", myItems.length);
 
     return myItems;
   }
@@ -504,6 +528,18 @@ contract Marketplace is ReentrancyGuard, Ownable {
    */
   function getMyOwnedTokenIds() public view returns (uint256[] memory) {
     return myOwnedTokenIds[msg.sender].tokenIds;
+  }
+
+  /**
+    @dev Get a list of itemIds related to listing.
+    @return an array of item IDs.
+   */
+  function getListingItemIdsById(uint256 _listingId)
+    public
+    view
+    returns (uint256[] memory)
+  {
+    return listings[_listingId].itemIds;
   }
 
   // Admin functions

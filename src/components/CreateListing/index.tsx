@@ -9,10 +9,10 @@ import { RiLoader4Line } from "react-icons/ri";
 import { createListing } from "../../blockchain";
 import { PreferencesContext } from "../../context/PreferencesContext";
 import { FileWithPreview, UserSession } from "../../types";
-import { getPriceData } from "../../utils/getPriceData";
 import { useEthPrice } from "../../utils/useEthPrice";
 import { useItems } from "../../utils/useItems";
 import { useListings } from "../../utils/useListings";
+import { usePrices } from "../../utils/usePrices";
 import { CompletedCheck } from "../CompletedCheck";
 import { Dialog } from "../Dialog";
 import { DropzoneField } from "../DropzoneField";
@@ -50,7 +50,7 @@ const CreateListing: FC<Props> = ({ session }) => {
   const { listings, setListings } = useListings();
   const { items } = useItems();
 
-  const { price: ethRate } = useEthPrice();
+  const { ethRate } = useEthPrice();
 
   const { handleSubmit, register, watch, setValue } = useForm<FormData>();
 
@@ -60,13 +60,15 @@ const CreateListing: FC<Props> = ({ session }) => {
   const onSubmit = async (values: FormData) => {
     setIsLoading(true);
 
-    const { name, price, description, items: selectedItems, quantity } = values;
+    const { name, price, description, quantity } = values;
 
-    // @todo - Decide how to deal with selected items (in order? create db listing entity?)
     // Get selected item entities
     const itemEntities = items?.filter(({ itemId }) =>
       selectItemIds?.includes(itemId)
     );
+    const itemIds: number[] = itemEntities
+      ? itemEntities.map(({ itemId }) => itemId)
+      : [];
 
     if (!ethRate) {
       console.log(
@@ -76,8 +78,23 @@ const CreateListing: FC<Props> = ({ session }) => {
       return setIsLoading(false);
     }
 
-    // Get prices formatted for db
-    const prices = getPriceData({ currency, inputPrice: price, ethRate });
+    const { convertPrice } = usePrices({ ethRate });
+
+    let eth = "";
+    let usd = "";
+
+    // Convert supported currencies
+    if (currency === "ETH") {
+      eth = String(price);
+      usd = convertPrice(eth, "USD");
+    } else if (currency === "USD") {
+      usd = String(price);
+      eth = convertPrice(usd, "ETH");
+    }
+
+    const prices = { eth, usd };
+
+    console.log("*** PRICES BEING SENT TO BACKEND: ", prices);
 
     if (!file) {
       return setIsLoading(false);
@@ -105,14 +122,17 @@ const CreateListing: FC<Props> = ({ session }) => {
     // Create ERC1155Token & Marketplace listing
     try {
       const listing = await createListing({
-        price: prices?.eth!,
+        prices,
         name,
         quantity: parseInt(String(quantity)),
         hash,
+        itemIds,
       });
 
       // Update items
-      setListings([...listings, listing]);
+      if (listings) {
+        setListings([...listings, listing]);
+      }
 
       setIsLoading(false);
       setOnSuccess(true);
@@ -170,6 +190,7 @@ const CreateListing: FC<Props> = ({ session }) => {
     file,
     validImageField,
     setValidImageField,
+    ethRate: ethRate!,
   };
   const successDialogProps = {
     isOpen: onSuccess,

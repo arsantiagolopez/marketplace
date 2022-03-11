@@ -1,16 +1,16 @@
 import React from "react";
-import { ListingEntity } from "../types";
+import { CartItem } from "../types";
 
 interface ContextState {
   cartCount: number;
-  cartListings: ListingEntity[];
-  addToCart: (listing: ListingEntity) => void;
+  cartItems: CartItem[];
+  addToCart: (cartItem: Partial<CartItem>) => void;
   cleanCart: () => void;
 }
 
 const CartContext = React.createContext<ContextState>({
   cartCount: 0,
-  cartListings: [],
+  cartItems: [],
   addToCart: () => {},
   cleanCart: () => {},
 });

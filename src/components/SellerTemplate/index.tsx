@@ -15,9 +15,9 @@ const SellerTemplate: FC<Props> = ({ sellerProfile }) => {
     null
   );
 
-  const { listings: allListings } = useListings({ all: true });
-
   const { name, image, address } = sellerProfile || {};
+
+  const { listings: allListings } = useListings({ all: true });
 
   // Only show available listings
   const fetchTokenBalances = async (listings: ListingEntity[]) => {
@@ -102,7 +102,13 @@ const SellerTemplate: FC<Props> = ({ sellerProfile }) => {
             // Listing cards
             <div className="py-4 md:py-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
               {sellerListings?.map(
-                ({ listingId, name, image, description, token: { price } }) => (
+                ({
+                  listingId,
+                  name,
+                  image,
+                  description,
+                  token: { prices },
+                }) => (
                   <Link key={listingId} href={`/listings/${listingId}`}>
                     <div className="flex flex-col w-full text-primary hover:cursor-pointer group hover:animate-pulse">
                       <div className="relative flex flex-row justify-center w-full h-52 md:h-80 aspect-square bg-white rounded-lg shadow-lg overflow-hidden">
@@ -111,7 +117,7 @@ const SellerTemplate: FC<Props> = ({ sellerProfile }) => {
                           alt={name}
                           className="object-center object-cover w-full h-full group-hover:opacity-90"
                         />
-                        <PriceLabel price={price} />
+                        <PriceLabel prices={prices} />
                       </div>
                       <div className="flex flex-col py-2">
                         <h1 className="font-Basic text-xl font-bold tracking-tight capitalize">

@@ -1,7 +1,6 @@
 import React, { Dispatch, FC, SetStateAction } from "react";
 import { UseFormWatch } from "react-hook-form";
 import { FileWithPreview } from "../../types";
-import { useEthPrice } from "../../utils/useEthPrice";
 import { PriceTag } from "../PriceTag";
 
 interface FormData {
@@ -17,6 +16,7 @@ interface Props {
   validImageField: boolean;
   setValidImageField: Dispatch<SetStateAction<boolean>>;
   validPriceField: boolean;
+  ethRate: string;
 }
 
 const Preview: FC<Props> = ({
@@ -26,25 +26,23 @@ const Preview: FC<Props> = ({
   validImageField,
   setValidImageField,
   validPriceField,
+  ethRate,
 }) => {
-  const { price: ethRate } = useEthPrice();
-
-  const priceInEth = (value: number): string => {
-    let price = value;
-    if (currency === "ETH") {
-      price = value;
-    } else {
-      price = value / parseFloat(ethRate!);
-    }
-    return String(price);
-  };
-
-  const price = priceInEth(watch("price"));
+  let prices =
+    currency === "ETH"
+      ? {
+          eth: String(watch("price")),
+          usd: String(watch("price") * parseFloat(ethRate!)),
+        }
+      : {
+          eth: String(watch("price") / parseFloat(ethRate!)),
+          usd: String(watch("price")),
+        };
 
   const handleSuccess = () => setValidImageField(true);
   const handleError = () => setValidImageField(false);
 
-  const priceTagProps = { price, currency };
+  const priceTagProps = { prices, currency, ethRate };
 
   return (
     <div className="relative flex flex-col justify-start w-full h-full">

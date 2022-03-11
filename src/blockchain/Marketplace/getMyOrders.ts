@@ -9,7 +9,7 @@ import { getListingById } from "./getListingById";
  * Get all my orders. Including both purchases and sales.
  * @returns an array of orders.
  */
-const getMyOrders = async (): Promise<OrderEntity[]> => {
+const getMyOrders = async (ethRate: string): Promise<OrderEntity[]> => {
   let orders: OrderEntity[] = [];
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -40,7 +40,7 @@ const getMyOrders = async (): Promise<OrderEntity[]> => {
     invoice = ethers.utils.formatUnits(String(invoice), "ether");
 
     // Get name & image off first listing in order
-    const { token } = (await getListingById(listingIds[0])) || {};
+    const { token } = (await getListingById(listingIds[0], ethRate)) || {};
 
     // Read values from IPFS metadata
     const name = await readIPFSField({

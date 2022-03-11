@@ -1,19 +1,24 @@
 import React, { FC, useContext, useState } from "react";
 import { GoCheck } from "react-icons/go";
 import { IoCartSharp } from "react-icons/io5";
+import { getItemById } from "../../blockchain";
 import { CartContext } from "../../context/CartContext";
-import { ListingEntity } from "../../types";
+import { CartItem, ItemEntity, ListingEntity } from "../../types";
+import { useEthPrice } from "../../utils/useEthPrice";
 
 interface Props {
-  listing: ListingEntity;
-  quantity: number;
+  listing?: ListingEntity;
+  quantity?: number;
+  selectItemIds?: number[];
 }
 
-const AddToCart: FC<Props> = ({ listing, quantity }) => {
+const AddToCart: FC<Props> = ({ listing, quantity, selectItemIds }) => {
   const [showUpdate, setShowUpdate] = useState<boolean>(false);
   const [helperMessage, setHelperMessage] = useState<string | null>(null);
 
-  const { addToCart, cartListings } = useContext(CartContext);
+  const { addToCart, cartItems } = useContext(CartContext);
+
+  const { ethRate } = useEthPrice();
 
   const toggleMessage = (message?: string) => {
     setShowUpdate(true);
@@ -25,26 +30,41 @@ const AddToCart: FC<Props> = ({ listing, quantity }) => {
   };
 
   // Add item to cart
-  const handleAddToCart = () => {
-    const isAlreadyInCart = cartListings.some(
-      ({ listingId }) => listing.listingId === listingId
-    );
+  const handleAddToCart = async () => {
+    if (listing && quantity && cartItems) {
+      const isAlreadyInCart = cartItems.some(
+        ({ listing: { listingId } }) => listingId === listing.listingId
+      );
 
-    if (isAlreadyInCart) {
-      const listingInCartCount = cartListings.filter(
-        ({ listingId }) => listingId === listing.listingId
-      ).length;
+      // Get item entities
+      let items: ItemEntity[] = [];
 
-      // Only add listing to cart if enough quantity remaining
-      if (listingInCartCount < quantity) {
-        toggleMessage();
-        addToCart(listing);
-      } else {
-        toggleMessage("Max quantity reached");
+      if (selectItemIds?.length && ethRate) {
+        for await (const id of selectItemIds) {
+          const item = await getItemById(id, ethRate);
+          items.push(item!);
+        }
       }
-    } else {
-      toggleMessage();
-      addToCart(listing);
+
+      const newCartItem: Partial<CartItem> = { listing, items };
+
+      // Make sure enough stock available
+      if (isAlreadyInCart) {
+        const listingInCartCount = cartItems.filter(
+          ({ listing: { listingId } }) => listingId === listing.listingId
+        ).length;
+
+        // Only add listing to cart if enough quantity remaining
+        if (listingInCartCount < quantity) {
+          toggleMessage();
+          addToCart(newCartItem);
+        } else {
+          toggleMessage("No more items in stock");
+        }
+      } else {
+        toggleMessage();
+        addToCart(newCartItem);
+      }
     }
   };
 

@@ -1,33 +1,35 @@
 import React, { FC, useEffect, useState } from "react";
 import { IoPricetags } from "react-icons/io5";
-import { ItemEntity } from "../../types";
+import { ItemEntity, PricesEntity } from "../../types";
 import { getSecretEmoji } from "../../utils/getSecretEmoji";
-import { useFormatPrice } from "../../utils/useFormatPrice";
+import { usePrices } from "../../utils/usePrices";
 
 interface Props {
-  price?: string;
+  prices?: PricesEntity;
   currency: string;
   isListing?: boolean;
   items?: ItemEntity[];
-  selectItemIds?: string[] | null;
+  selectItemIds?: number[] | null;
+  ethRate: string;
 }
 
 const PriceTag: FC<Props> = ({
-  price,
+  prices,
   currency,
   isListing,
   items,
   selectItemIds,
+  ethRate,
 }) => {
   const [isDetailed, setIsDetailed] = useState<boolean>(true);
   const [itemsSelected, setItemsSelected] = useState<ItemEntity[] | null>(null);
 
-  const { usd, eth } = useFormatPrice(price!) || {};
-  const formattedPrice =
-    price && price !== "0" ? (currency === "ETH" ? eth : usd) : null;
+  const { usd, eth, convertPrice } = usePrices({ currency, prices, ethRate });
+
+  const formattedPrice = currency === "ETH" ? eth : usd;
 
   const isExpanded: boolean =
-    !!price && !!itemsSelected && !!itemsSelected.length && isDetailed;
+    !!prices && !!itemsSelected && !!itemsSelected.length && isDetailed;
 
   // Only allow toggle for listings
   const toggleIsDetailed = () => isListing && setIsDetailed(!isDetailed);
@@ -38,7 +40,7 @@ const PriceTag: FC<Props> = ({
   useEffect(() => {
     if (items && selectItemIds && selectItemIds.length) {
       const itemsWithId = items?.filter(({ itemId }) =>
-        selectItemIds.includes(String(itemId))
+        selectItemIds.includes(itemId)
       );
       setIsDetailed(true);
       setItemsSelected(itemsWithId);
@@ -63,13 +65,12 @@ const PriceTag: FC<Props> = ({
       >
         <IoPricetags className="text-gray-300 text-xl mr-3" />
         <h1 className="font-Basic tracking-tight text-2xl flex flex-row items-center">
-          {currency === "USD" ? (
-            <span className="mx-1 mr-2 select-none">$</span>
-          ) : (
+          {currency === "ETH" ? (
             <img src="/currency/eth.png" className="h-5 mr-1" />
+          ) : (
+            <span className="mx-1 mr-2 select-none">$</span>
           )}
-
-          {price ? (
+          {prices ? (
             <span className="ml-1">{formattedPrice}</span>
           ) : (
             <div className="flex flex-col w-10 h-6 animate-pulse bg-gray-100 rounded-md ml-1"></div>
@@ -81,16 +82,22 @@ const PriceTag: FC<Props> = ({
       <div className="items-center h-full w-full truncate">
         {isExpanded && (
           <div className="flex items-center w-full h-full pl-3 pr-1 overflow-x-scroll">
-            {itemsSelected?.map(({ itemId, name, token: { price } }, index) => {
-              let finalPrice =
-                currency === "ETH"
-                  ? `~${parseFloat(String(price)).toFixed(6)} ETH`
-                  : `$${Number(price).toLocaleString()}`;
+            {itemsSelected?.map(({ itemId, name, token }, index) => {
+              const { eth: itemEth, usd: itemUsd } = usePrices({
+                currency,
+                prices: token?.prices,
+                ethRate: ethRate!,
+              });
+
+              const eth = itemEth;
+              const usd = itemUsd;
+
+              let finalPrice = currency === "ETH" ? `${eth} ETH` : `$${usd}`;
 
               return (
                 <p key={itemId} className="font-Basic text-lg capitalize ml-1">
+                  {(itemsSelected.length - 1 !== index || index === 0) && "+ "}
                   {getNameOrEmoji(name)} ({finalPrice}){" "}
-                  {itemsSelected.length - 1 !== index && "+"}
                 </p>
               );
             })}

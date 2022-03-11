@@ -8,20 +8,18 @@ import {
 import { Result } from "ethers/lib/utils";
 import Marketplace from "../../../artifacts/contracts/Marketplace.sol/Marketplace.json";
 import { MARKETPLACE_ADDRESS } from "../../../config";
-import { ItemEntity, ListingEntity, OrderEntity } from "../../types";
+import { CartItem, ItemEntity, OrderEntity } from "../../types";
+import { readIPFSField } from "../../utils/readIPFSField";
 
 interface Props {
-  /* Listings array */
-  listings: ListingEntity[];
-  /* Items array */
-  items?: ItemEntity[];
+  /* Array of final listings and items */
+  cartItems: CartItem[];
   /* Total price to pay seller */
   total: number;
 }
 
 const createOrder = async ({
-  listings,
-  items,
+  cartItems,
   total,
 }: Props): Promise<OrderEntity> => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -30,6 +28,17 @@ const createOrder = async ({
 
   // Convert total BigNumber to wei value
   const weiTotal = ethers.utils.parseUnits(String(total), "ether");
+
+  // Get individual listings
+  const listings = cartItems.map(({ listing }) => listing);
+
+  // Get individual, possible duplicate, items
+  let items: ItemEntity[] = [];
+  cartItems.map((cartItem) => {
+    if (cartItem?.items?.length) {
+      cartItem.items.map((item) => items.push(item));
+    }
+  });
 
   // Get id values from listings & items
   const listingIds = listings.map(({ listingId }) => listingId);
@@ -57,6 +66,19 @@ const createOrder = async ({
   // Convert values to readable
   orderId = orderId.toNumber();
 
+  // Get image & name from first listing in order
+  const listing = listings[0];
+
+  // Read values from IPFS metadata
+  const name = await readIPFSField({
+    cid: listing.token.tokenHash,
+    property: "name",
+  });
+  const image = await readIPFSField({
+    cid: listing.token.tokenHash,
+    property: "image",
+  });
+
   const order: OrderEntity = {
     orderId,
     invoice: String(total),
@@ -64,6 +86,8 @@ const createOrder = async ({
     buyer,
     listingIds,
     itemIds: itemIds ?? undefined,
+    name,
+    image,
   };
 
   console.log("* completed order: ", order);
@@ -72,3 +96,5 @@ const createOrder = async ({
 };
 
 export { createOrder };
+
+// @todo

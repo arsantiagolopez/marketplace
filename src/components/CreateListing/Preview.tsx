@@ -2,7 +2,6 @@ import React, { Dispatch, FC, SetStateAction } from "react";
 import { UseFormWatch } from "react-hook-form";
 import useSWR from "swr";
 import { FileWithPreview, SellerProfileEntity } from "../../types";
-import { useEthPrice } from "../../utils/useEthPrice";
 import { PriceTag } from "../PriceTag";
 
 interface FormData {
@@ -19,6 +18,7 @@ interface Props {
   file: FileWithPreview | null;
   validImageField: boolean;
   setValidImageField: Dispatch<SetStateAction<boolean>>;
+  ethRate: string;
 }
 
 const Preview: FC<Props> = ({
@@ -27,33 +27,32 @@ const Preview: FC<Props> = ({
   file,
   validImageField,
   setValidImageField,
+  ethRate,
 }) => {
   const { data: sellerProfile } = useSWR<SellerProfileEntity, any>(
     "/api/sellers"
   );
   const { name: store } = sellerProfile || {};
 
-  const { price: ethRate } = useEthPrice();
-
-  const priceInEth = (value: number): string => {
-    let price = value;
-    if (currency === "ETH") {
-      price = value;
-    } else {
-      price = value / parseFloat(ethRate!);
-    }
-    return String(price);
-  };
-
-  const price = priceInEth(watch("price") || 0);
+  let prices =
+    currency === "ETH"
+      ? {
+          eth: String(watch("price")),
+          usd: String(watch("price") * parseFloat(ethRate)),
+        }
+      : {
+          eth: String(watch("price") / parseFloat(ethRate)),
+          usd: String(watch("price")),
+        };
 
   const handleSuccess = () => setValidImageField(true);
   const handleError = () => setValidImageField(false);
 
   const priceTagProps = {
-    price,
+    prices,
     currency,
     isListing: true,
+    ethRate,
   };
 
   return (
