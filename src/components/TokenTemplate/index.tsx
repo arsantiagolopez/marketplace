@@ -24,11 +24,15 @@ const TokenTemplate: FC<Props> = ({ session, listing }) => {
   const { usd, eth } = usePrices({ prices, currency, ethRate: ethRate! });
 
   const getTokenBalance = async (id: number) => {
-    const balance = await getBalanceOfTokenById({
-      id,
-      address: user?.walletAddress,
-    });
-    setQuantity(balance);
+    try {
+      const balance = await getBalanceOfTokenById({
+        id,
+        address: user?.walletAddress,
+      });
+      setQuantity(balance);
+    } catch {
+      console.log("Could not fetch the balance of tokens.");
+    }
   };
 
   // Get token quantity

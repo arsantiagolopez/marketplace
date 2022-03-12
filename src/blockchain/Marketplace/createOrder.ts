@@ -8,7 +8,7 @@ import {
 import { Result } from "ethers/lib/utils";
 import Marketplace from "../../../artifacts/contracts/Marketplace.sol/Marketplace.json";
 import { MARKETPLACE_ADDRESS } from "../../../config";
-import { CartItem, ItemEntity, OrderEntity } from "../../types";
+import { CartItem, OrderEntity } from "../../types";
 import { readIPFSField } from "../../utils/readIPFSField";
 
 interface Props {
@@ -29,20 +29,21 @@ const createOrder = async ({
   // Convert total BigNumber to wei value
   const weiTotal = ethers.utils.parseUnits(String(total), "ether");
 
-  // Get individual listings
-  const listings = cartItems.map(({ listing }) => listing);
+  // Get individual listings, possible duplicates
+  let listingIds: number[] = [];
+  let itemIds: number[] = [];
 
-  // Get individual, possible duplicate, items
-  let items: ItemEntity[] = [];
-  cartItems.map((cartItem) => {
-    if (cartItem?.items?.length) {
-      cartItem.items.map((item) => items.push(item));
+  cartItems.map(({ listing, items, quantity }) => {
+    const { listingId } = listing;
+    // Push quantity of listings
+    listingIds.push(...Array(quantity).fill(listingId));
+
+    for (const item of items) {
+      const { itemId } = item;
+      // Push quantity of items
+      itemIds.push(...Array(quantity).fill(itemId));
     }
   });
-
-  // Get id values from listings & items
-  const listingIds = listings.map(({ listingId }) => listingId);
-  const itemIds = items ? items.map(({ itemId }) => itemId) : [];
 
   // Create listing from marketplace contract
   const marketplaceContract: Contract = new ethers.Contract(
@@ -67,7 +68,7 @@ const createOrder = async ({
   orderId = orderId.toNumber();
 
   // Get image & name from first listing in order
-  const listing = listings[0];
+  const listing = cartItems[0].listing;
 
   // Read values from IPFS metadata
   const name = await readIPFSField({

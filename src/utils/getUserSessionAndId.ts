@@ -20,12 +20,16 @@ const getUserSessionAndId = async ({
 }: Props): Promise<Response | undefined> => {
   const secret = process.env.SUPABASE_JWT_SECRET || "";
 
-  // Sub is the user's ID
-  const { sub: userId } = (await getToken({ req, secret })) || {};
+  try {
+    // Sub is the user's ID
+    const { sub: userId } = (await getToken({ req, secret })) || {};
 
-  const session = (await getSession({ req })) as unknown as UserSession;
+    const session = (await getSession({ req })) as unknown as UserSession;
 
-  return { userId, session };
+    return { userId, session };
+  } catch {
+    console.log("Could not fetch session.");
+  }
 };
 
 export { getUserSessionAndId };

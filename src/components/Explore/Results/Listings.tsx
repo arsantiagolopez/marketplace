@@ -17,19 +17,23 @@ const Listings: FC<Props> = ({ listings }) => {
   const getAvailableListings = async () => {
     let updatedListings: ListingEntity[] = [];
 
-    for await (const listing of listings) {
-      const {
-        token: { tokenId, seller },
-      } = listing;
-      const quantity = await getBalanceOfTokenById({
-        id: tokenId,
-        address: seller,
-      });
+    try {
+      for await (const listing of listings) {
+        const {
+          token: { tokenId, seller },
+        } = listing;
+        const quantity = await getBalanceOfTokenById({
+          id: tokenId,
+          address: seller,
+        });
 
-      // Only include listings with more than 0 stock
-      if (quantity) {
-        updatedListings.push(listing);
+        // Only include listings with more than 0 stock
+        if (quantity) {
+          updatedListings.push(listing);
+        }
       }
+    } catch {
+      console.log("Could not fetch the balance of tokens.");
     }
 
     setAvailableListings(updatedListings);

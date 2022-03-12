@@ -170,7 +170,6 @@ contract Marketplace is ReentrancyGuard, Ownable {
     require(_price > 0, "Item price is required");
 
     uint256 itemId = itemCount.current();
-    itemCount.increment();
 
     Token memory newToken = Token(
       _tokenId,
@@ -191,6 +190,8 @@ contract Marketplace is ReentrancyGuard, Ownable {
       _price,
       payable(msg.sender)
     );
+
+    itemCount.increment();
   }
 
   /**
@@ -217,7 +218,6 @@ contract Marketplace is ReentrancyGuard, Ownable {
     require(_price > 0, "Listing price is required");
 
     uint256 listingId = listingCount.current();
-    listingCount.increment();
 
     Token memory newToken = Token(
       _tokenId,
@@ -240,6 +240,8 @@ contract Marketplace is ReentrancyGuard, Ownable {
       true,
       _itemIds
     );
+
+    listingCount.increment();
   }
 
   /**
@@ -322,7 +324,6 @@ contract Marketplace is ReentrancyGuard, Ownable {
     require(success, "Failed to transfer funds.");
 
     uint256 orderId = orderCount.current();
-    orderCount.increment();
 
     // Create & store order
     orders[orderId] = Order(
@@ -342,6 +343,8 @@ contract Marketplace is ReentrancyGuard, Ownable {
       _listingIds,
       _itemIds
     );
+
+    orderCount.increment();
   }
 
   /**
@@ -396,7 +399,7 @@ contract Marketplace is ReentrancyGuard, Ownable {
 
     Listing[] memory activeListings = new Listing[](activeListingsLength);
 
-    for (uint256 i = 0; i < activeListingsLength; i++) {
+    for (uint256 i = 0; i < totalListings; i++) {
       if (listings[i].isActive) {
         activeListings[activeListingsIndex] = listings[i];
         activeListingsIndex++;

@@ -26,6 +26,10 @@ const getAllListings = async (ethRate: string): Promise<ListingEntity[]> => {
     return listings;
   }
 
+  if (data[0].token.seller === "0x0000000000000000000000000000000000000000") {
+    return listings;
+  }
+
   for await (const listing of data) {
     let [listingId, token, isActive] = listing;
     let [tokenId, tokenContract, tokenHash, price, seller] = token;
@@ -82,6 +86,7 @@ const getAllListings = async (ethRate: string): Promise<ListingEntity[]> => {
     listings.push(newListing);
   }
 
+  console.log("all listings: ", listings);
   return listings;
 };
 

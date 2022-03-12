@@ -29,7 +29,7 @@ const Items: FC<Props> = () => {
         {items?.map(({ itemId, image }) => (
           <div
             key={itemId}
-            className="rounded-lg aspect-square w-full cursor-pointer shadow-lg hover:animate-pulse opacity-90 overflow-hidden bg-white"
+            className="rounded-lg aspect-square w-full shadow-lg hover:animate-pulse opacity-90 overflow-hidden bg-white"
           >
             <img src={image} className="h-full w-full object-cover" />
           </div>

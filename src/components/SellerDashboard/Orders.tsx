@@ -27,8 +27,12 @@ const Orders: FC<Props> = ({ sellerProfile }) => {
   };
 
   const fetchMyOrders = async (rate: string) => {
-    const myOrders = await getMyOrders(rate);
-    setOrders(myOrders);
+    try {
+      const myOrders = await getMyOrders(rate);
+      setOrders(myOrders);
+    } catch {
+      console.log("Could not fetch your orders.");
+    }
   };
 
   useEffect(() => {

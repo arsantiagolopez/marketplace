@@ -41,8 +41,12 @@ const AddToCart: FC<Props> = ({ listing, quantity, selectItemIds }) => {
 
       if (selectItemIds?.length && ethRate) {
         for await (const id of selectItemIds) {
-          const item = await getItemById(id, ethRate);
-          items.push(item!);
+          try {
+            const item = await getItemById(id, ethRate);
+            items.push(item!);
+          } catch {
+            console.log("Items could not be fetched.");
+          }
         }
       }
 
@@ -50,9 +54,14 @@ const AddToCart: FC<Props> = ({ listing, quantity, selectItemIds }) => {
 
       // Make sure enough stock available
       if (isAlreadyInCart) {
-        const listingInCartCount = cartItems.filter(
+        const listingsWithSameListingId = cartItems.filter(
           ({ listing: { listingId } }) => listingId === listing.listingId
-        ).length;
+        );
+
+        const listingInCartCount = listingsWithSameListingId.reduce(
+          (acc, { quantity }) => acc + quantity!,
+          0
+        );
 
         // Only add listing to cart if enough quantity remaining
         if (listingInCartCount < quantity) {

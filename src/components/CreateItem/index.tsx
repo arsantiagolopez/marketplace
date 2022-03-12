@@ -86,25 +86,25 @@ const CreateItem: FC<Props> = ({ session }) => {
       return setIsLoading(false);
     }
 
-    // Upload image to IPFS with NFT.Storage
-    let formData = new FormData();
-    formData.append("image", file);
-    formData.append("name", name);
-
-    const { data: IPFSResult, status: IPFSStatus } = await axios.post(
-      "/api/ipfs/image",
-      formData
-    );
-
-    // Only create item record if NFT uploaded to IPFS
-    if (IPFSStatus !== 200) {
-      setIsLoading(false);
-      return setOnSuccess(false);
-    }
-
-    const { ipnft: hash } = IPFSResult;
-
     try {
+      // Upload image to IPFS with NFT.Storage
+      let formData = new FormData();
+      formData.append("image", file);
+      formData.append("name", name);
+
+      const { data: IPFSResult, status: IPFSStatus } = await axios.post(
+        "/api/ipfs/image",
+        formData
+      );
+
+      // Only create item record if NFT uploaded to IPFS
+      if (IPFSStatus !== 200) {
+        setIsLoading(false);
+        return setOnSuccess(false);
+      }
+
+      const { ipnft: hash } = IPFSResult;
+
       // Create ERC1155Token & Marketplace item
       const item = await createItem({
         prices,

@@ -59,9 +59,13 @@ const EditProfileButton: FC<Props> = ({
     setNameInput(event.target.value);
 
   const handleProfileUpdate = async (close: any) => {
-    const { data } = await axios.put("/api/users", { name: nameInput });
-    mutate(data);
-    close();
+    try {
+      const { data } = await axios.put("/api/users", { name: nameInput });
+      mutate(data);
+      close();
+    } catch {
+      console.log("Could not update your profile.");
+    }
   };
 
   const handleSignOut = () => setIsSignOutOpen(true);

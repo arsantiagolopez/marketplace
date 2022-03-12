@@ -32,19 +32,24 @@ const SellerDashboard: FC<Props> = () => {
   const handleSave = async (): Promise<void> => {
     const name = editableStoreName ? editableStoreName : undefined;
     const image = editableImage ? editableImage : undefined;
-    const { data, status } = await axios.put("/api/sellers", { name, image });
 
-    if (status !== 200) {
-      console.log("Something went awfully wrong. Try again later.");
-      return;
+    try {
+      const { data, status } = await axios.put("/api/sellers", { name, image });
+
+      if (status !== 200) {
+        console.log("Something went awfully wrong. Try again later.");
+        return;
+      }
+
+      mutate({ ...sellerProfile, ...data });
+
+      // Reset state fields
+      setEditableStoreName("");
+      setEditableImage("");
+      setIsActiveUpdate(false);
+    } catch {
+      console.log("Could not update your profile.");
     }
-
-    mutate({ ...sellerProfile, ...data });
-
-    // Reset state fields
-    setEditableStoreName("");
-    setEditableImage("");
-    setIsActiveUpdate(false);
   };
 
   const storeNameEditableProps = {

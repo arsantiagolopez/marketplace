@@ -73,31 +73,39 @@ const RegisterForm: FC<Props> = ({ session }) => {
     if (user) {
       if (store) {
         // If not registered, register seller on the smart contract
-        const success = await createSeller();
+        try {
+          const success = await createSeller();
 
-        if (!success) {
+          if (!success) {
+            return setOnSuccess(false);
+          }
+
+          // Create seller profile
+          await axios.post("/api/sellers", {
+            name: store,
+            image: process.env.NEXT_PUBLIC_DEFAULT_STORE_IMAGE,
+            address: user.walletAddress,
+          });
+        } catch {
+          console.log("Seller could not be registered.");
+        }
+      }
+
+      try {
+        // Update user
+        const { status } = await axios.put("/api/users/", {
+          name,
+          isSeller: !!store,
+        });
+
+        if (status !== 200) {
           return setOnSuccess(false);
         }
 
-        // Create seller profile
-        await axios.post("/api/sellers", {
-          name: store,
-          image: process.env.NEXT_PUBLIC_DEFAULT_STORE_IMAGE,
-          address: user.walletAddress,
-        });
+        setOnSuccess(true);
+      } catch {
+        console.log("User account could not be created.");
       }
-
-      // Update user
-      const { status } = await axios.put("/api/users/", {
-        name,
-        isSeller: !!store,
-      });
-
-      if (status !== 200) {
-        return setOnSuccess(false);
-      }
-
-      setOnSuccess(true);
     }
   };
 

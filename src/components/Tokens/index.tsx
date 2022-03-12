@@ -17,8 +17,12 @@ const Tokens: FC<Props> = () => {
   const { ethRate } = useEthPrice();
 
   const fetchMyTokens = async (rate: string) => {
-    const myTokens = await getMyOwnedTokens(rate);
-    setTokens(myTokens);
+    try {
+      const myTokens = await getMyOwnedTokens(rate);
+      setTokens(myTokens);
+    } catch {
+      console.log("Could not fetch your owned tokens.");
+    }
   };
 
   // Update listings and items state arrays

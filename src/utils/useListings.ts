@@ -27,21 +27,29 @@ const useListings = ({ all }: Props = {}): Response => {
 
   // Fetch my created listings from contract
   const fetchMyListings = async () => {
-    if (ethRate) {
-      let listingsArray = await getMyListings(ethRate);
+    try {
+      if (ethRate) {
+        let listingsArray = await getMyListings(ethRate);
 
-      // Push inactive listings to end
-      listingsArray = pushInactiveToEnd(listingsArray);
+        // Push inactive listings to end
+        listingsArray = pushInactiveToEnd(listingsArray);
 
-      setListings(listingsArray);
+        setListings(listingsArray);
+      }
+    } catch {
+      console.log("Could not fetch your items.");
     }
   };
 
   // Fetch all existing listings in the Marketplace
   const fetchAllListings = async () => {
-    if (ethRate) {
-      let listingsArray = await getAllListings(ethRate);
-      setListings(listingsArray);
+    try {
+      if (ethRate) {
+        let listingsArray = await getAllListings(ethRate);
+        setListings(listingsArray);
+      }
+    } catch {
+      console.log("Could not fetch your listings.");
     }
   };
 

@@ -25,8 +25,12 @@ const TokenPage: ProtectedPage<Props> = () => {
 
   // Fetch listing from contract
   const fetchListingById = async (id: number, rate: string) => {
-    const data = await getListingById(id, rate);
-    setListing(data);
+    try {
+      const data = await getListingById(id, rate);
+      setListing(data);
+    } catch {
+      console.log("Could not fetch listing.");
+    }
   };
 
   useEffect(() => {

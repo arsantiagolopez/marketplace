@@ -62,13 +62,15 @@ const CartProvider: FC<Props> = ({ children }) => {
   };
 
   const cleanCart = () => {
-    setCartItems([]);
     setCartCount(0);
+    setCartItems([]);
+    setUniqueCartItems([]);
   };
 
   useEffect(() => {
     setCartCount(0);
     setCartItems([]);
+    setUniqueCartItems([]);
   }, []);
 
   return (

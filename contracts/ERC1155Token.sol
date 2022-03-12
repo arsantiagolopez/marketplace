@@ -63,7 +63,6 @@ contract ERC1155Token is ERC1155 {
     returns (uint256)
   {
     uint256 tokenId = tokenCount.current();
-    tokenCount.increment();
 
     // Mint new item with given quantity
     mint(msg.sender, tokenId, _quantity);
@@ -76,6 +75,8 @@ contract ERC1155Token is ERC1155 {
 
     // Emit event on token creation
     emit TokenCreated(tokenId);
+
+    tokenCount.increment();
 
     return tokenId;
   }

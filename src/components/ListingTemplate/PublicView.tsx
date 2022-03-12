@@ -45,11 +45,15 @@ const PublicListingView: FC<Props> = ({
   const isProfileCompleted = session && !!session.user?.name;
 
   const getSellersTokenBalance = async (id: number) => {
-    const balance = await getBalanceOfTokenById({
-      id,
-      address: sellerAddress,
-    });
-    setQuantity(balance);
+    try {
+      const balance = await getBalanceOfTokenById({
+        id,
+        address: sellerAddress,
+      });
+      setQuantity(balance);
+    } catch {
+      console.log("Could not fetch the balance of tokens.");
+    }
   };
 
   // Add extras to listing
@@ -195,48 +199,54 @@ const PublicListingView: FC<Props> = ({
               }
               Panel={
                 <div className="flex flex-nowrap items-centerspace-x-2 overflow-x-scroll px-0 md:mx-[-1.25rem] md:px-5 pb-6">
-                  {(items?.length ? items : allItems)?.map(
-                    ({ itemId, name, image, token }) => {
-                      const { eth: itemEth, usd: itemUsd } = usePrices({
-                        currency,
-                        prices: token?.prices,
-                        ethRate: ethRate!,
-                      });
+                  {items?.length || allItems?.length ? (
+                    (items?.length ? items : allItems)?.map(
+                      ({ itemId, name, image, token }) => {
+                        const { eth: itemEth, usd: itemUsd } = usePrices({
+                          currency,
+                          prices: token?.prices,
+                          ethRate: ethRate!,
+                        });
 
-                      const eth = itemEth;
-                      const usd = itemUsd;
+                        const eth = itemEth;
+                        const usd = itemUsd;
 
-                      return (
-                        <Tooltip
-                          key={itemId}
-                          label={`Add ${name} (+ ${
-                            currency === "ETH" ? `${eth} ETH` : `$${usd}`
-                          })`}
-                          position="center"
-                          fitWidth
-                        >
-                          <div
-                            onClick={() => handleAddToListing(itemId)}
-                            className={`relative flex justify-center items-center tooltip tooltip-bottom text-tertiary cursor-pointer hover:opacity-80 ml-2 ${
-                              !image && "bg-gray-100 animate-pulse"
-                            }`}
+                        return (
+                          <Tooltip
+                            key={itemId}
+                            label={`Add ${name} (+ ${
+                              currency === "ETH" ? `${eth} ETH` : `$${usd}`
+                            })`}
+                            position="center"
+                            fitWidth
                           >
-                            {image && (
-                              <img
-                                src={image}
-                                className={`object-cover rounded-lg w-14 h-14 min-w-[3.5rem] ${
-                                  selectItemIds?.includes(itemId) &&
-                                  "brightness-[30%] bg-gray-50"
-                                }`}
-                              />
-                            )}
-                            {selectItemIds?.includes(itemId) && (
-                              <CgCheck className="z-10 absolute text-white text-3xl pointer-events-none animate-pulse" />
-                            )}
-                          </div>
-                        </Tooltip>
-                      );
-                    }
+                            <div
+                              onClick={() => handleAddToListing(itemId)}
+                              className={`relative flex justify-center items-center tooltip tooltip-bottom text-tertiary cursor-pointer hover:opacity-80 ml-2 ${
+                                !image && "bg-gray-100 animate-pulse"
+                              }`}
+                            >
+                              {image && (
+                                <img
+                                  src={image}
+                                  className={`object-cover rounded-lg w-14 h-14 min-w-[3.5rem] ${
+                                    selectItemIds?.includes(itemId) &&
+                                    "brightness-[30%] bg-gray-50"
+                                  }`}
+                                />
+                              )}
+                              {selectItemIds?.includes(itemId) && (
+                                <CgCheck className="z-10 absolute text-white text-3xl pointer-events-none animate-pulse" />
+                              )}
+                            </div>
+                          </Tooltip>
+                        );
+                      }
+                    )
+                  ) : (
+                    <p className="flex flex-row items-baseline text-tertiary">
+                      Seller did not add any items to this listing.
+                    </p>
                   )}
                 </div>
               }

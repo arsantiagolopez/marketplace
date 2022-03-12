@@ -23,17 +23,21 @@ const SellerTemplate: FC<Props> = ({ sellerProfile }) => {
   const fetchTokenBalances = async (listings: ListingEntity[]) => {
     let availableListings: ListingEntity[] = [];
 
-    for await (const listing of listings) {
-      const {
-        token: { tokenId },
-      } = listing;
-      const isAvailable = await getBalanceOfTokenById({
-        id: tokenId,
-        address,
-      });
-      if (isAvailable) {
-        availableListings.push(listing);
+    try {
+      for await (const listing of listings) {
+        const {
+          token: { tokenId },
+        } = listing;
+        const isAvailable = await getBalanceOfTokenById({
+          id: tokenId,
+          address,
+        });
+        if (isAvailable) {
+          availableListings.push(listing);
+        }
       }
+    } catch {
+      console.log("Could not fetch the balance of tokens.");
     }
 
     setSellerListings(availableListings);

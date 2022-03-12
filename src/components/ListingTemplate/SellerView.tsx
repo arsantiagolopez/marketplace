@@ -42,8 +42,12 @@ const SellerListingView: FC<Props> = ({
   const { ethRate } = useEthPrice();
 
   const getTokenBalance = async (id: number) => {
-    const balance = await getBalanceOfTokenById({ id });
-    setQuantity(balance);
+    try {
+      const balance = await getBalanceOfTokenById({ id });
+      setQuantity(balance);
+    } catch {
+      console.log("Could not fetch the balance of tokens.");
+    }
   };
 
   // Pause item from being sold on the marketplace
@@ -189,7 +193,7 @@ const SellerListingView: FC<Props> = ({
             <Dropdown
               Button={
                 <p className="font-Basic text-2xl tracking-tighter pb-4">
-                  Add extras
+                  Available extras
                 </p>
               }
               Panel={
@@ -230,7 +234,7 @@ const SellerListingView: FC<Props> = ({
                       );
                     })
                   ) : (
-                    <p className="flex flex-row items-baseline text-tertiary text-sm">
+                    <p className="flex flex-row items-baseline text-tertiary">
                       No item selected. All items will be available for buyers
                       to add.
                     </p>

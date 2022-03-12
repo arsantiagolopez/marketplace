@@ -36,29 +36,43 @@ const ListingPage: ProtectedPage<Props> = () => {
 
   // Fetch listing from contract
   const fetchListingById = async (id: number, rate: string) => {
-    const data = await getListingById(id, rate);
-    setListing(data);
+    try {
+      const data = await getListingById(id, rate);
+      setListing(data);
+    } catch {
+      console.log("Could not fetch listing.");
+    }
   };
 
   // Fetch items related to listing
   const fetchItemsById = async (ids: number[], rate: string) => {
     let itemsArr: ItemEntity[] = [];
-    for await (const itemId of ids) {
-      const item = await getItemById(itemId, rate);
-      if (item) {
-        itemsArr.push(item);
+
+    try {
+      for await (const itemId of ids) {
+        const item = await getItemById(itemId, rate);
+        if (item) {
+          itemsArr.push(item);
+        }
       }
+    } catch {
+      console.log("Could not fetch items.");
     }
+
     setItems(itemsArr);
   };
 
   // Fetch all items by seller
   const fetchAllItemsBySeller = async (rate: string) => {
-    const items = await getAllItems(rate);
-    const sellerItems = items.filter(
-      ({ token }) => token?.seller === listing?.token?.seller
-    );
-    setAllItems(sellerItems);
+    try {
+      const items = await getAllItems(rate);
+      const sellerItems = items.filter(
+        ({ token }) => token?.seller === listing?.token?.seller
+      );
+      setAllItems(sellerItems);
+    } catch {
+      console.log("Could not fetch all items.");
+    }
   };
 
   const listingTemplateProps = {

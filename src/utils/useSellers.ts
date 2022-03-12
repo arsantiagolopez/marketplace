@@ -17,14 +17,18 @@ const useSellers = (): Response => {
   ): Promise<SellerProfileEntity[] | null> => {
     let sellerProfiles: SellerProfileEntity[] | null = null;
 
-    for (const address of addresses) {
-      const { data } = await axios.get(`/api/sellers/${address}`);
+    try {
+      for (const address of addresses) {
+        const { data } = await axios.get(`/api/sellers/${address}`);
 
-      if (data && !sellerProfiles) {
-        sellerProfiles = [];
+        if (data && !sellerProfiles) {
+          sellerProfiles = [];
+        }
+
+        sellerProfiles?.push(data);
       }
-
-      sellerProfiles?.push(data);
+    } catch {
+      console.log("Could not fetch seller profiles.");
     }
 
     return sellerProfiles;
@@ -32,11 +36,15 @@ const useSellers = (): Response => {
 
   // Fetch sellers from contract
   const fetchSellers = async () => {
-    let addresses = await getAllSellers();
+    try {
+      let addresses = await getAllSellers();
 
-    if (addresses) {
-      const sellerProfiles = await getSellerProfiles(addresses);
-      setSellers(sellerProfiles);
+      if (addresses) {
+        const sellerProfiles = await getSellerProfiles(addresses);
+        setSellers(sellerProfiles);
+      }
+    } catch {
+      console.log("Could not fetch sellers.");
     }
   };
 

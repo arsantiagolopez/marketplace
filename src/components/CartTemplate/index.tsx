@@ -157,13 +157,17 @@ const CartTemplate: FC<Props> = () => {
       return acc + price;
     }, 0);
 
-    // Make transaction
-    await createOrder({ cartItems, total: ethTotal });
+    try {
+      // Make transaction
+      await createOrder({ cartItems, total: ethTotal });
 
-    // On success
-    setOnSuccess(true);
-    // Wipe items off cart
-    cleanCart();
+      // On success
+      setOnSuccess(true);
+      // Wipe items off cart
+      cleanCart();
+    } catch {
+      console.log("The transaction could not be completed.");
+    }
   };
 
   const successDialogProps = {
@@ -265,10 +269,11 @@ const CartTemplate: FC<Props> = () => {
                   <div className="flex flex-col py-2">
                     <h1 className="font-Basic text-xl font-bold tracking-tight capitalize">
                       {name}{" "}
-                      {items?.length &&
-                        `with ${items[0].name} ${
-                          items?.length > 1 ? "and others..." : ""
-                        }`}
+                      {items?.length
+                        ? `with ${items[0].name} ${
+                            items?.length > 1 ? "and others..." : ""
+                          }`
+                        : null}
                     </h1>
                     {/* Tailwind multiline truncate fix */}
                     <p className="text-tertiary leading-6 max-h-[3rem] ellipsis overflow-hidden">

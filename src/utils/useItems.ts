@@ -7,8 +7,12 @@ const useItems = () => {
 
   // Fetch items from contract
   const fetchItems = async () => {
-    const itemsArray = await getMyItems();
-    setItems(itemsArray);
+    try {
+      const itemsArray = await getMyItems();
+      setItems(itemsArray);
+    } catch {
+      console.log("Could not fetch your items.");
+    }
   };
 
   useEffect(() => {
