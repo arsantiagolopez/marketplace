@@ -84,8 +84,6 @@ const getMyListings = async (ethRate: string): Promise<ListingEntity[]> => {
     listings.push(newListing);
   }
 
-  console.log(listings);
-
   return listings;
 };
 

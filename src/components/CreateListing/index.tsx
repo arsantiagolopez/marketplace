@@ -94,8 +94,6 @@ const CreateListing: FC<Props> = ({ session }) => {
 
     const prices = { eth, usd };
 
-    console.log("*** PRICES BEING SENT TO BACKEND: ", prices);
-
     if (!file) {
       return setIsLoading(false);
     }

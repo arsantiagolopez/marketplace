@@ -35,7 +35,8 @@ const SellerDashboard: FC<Props> = () => {
     const { data, status } = await axios.put("/api/sellers", { name, image });
 
     if (status !== 200) {
-      return console.log("Something went awfully wrong. Try again later.");
+      console.log("Something went awfully wrong. Try again later.");
+      return;
     }
 
     mutate({ ...sellerProfile, ...data });

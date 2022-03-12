@@ -288,8 +288,6 @@ contract Marketplace is ReentrancyGuard, Ownable {
       total += token.price;
     }
 
-    console.log("*** Funds being sent & total: ", msg.sender, total);
-
     // Make sure submitted price matches the sum of all token prices
     require(msg.value == total, "Funds don't match total price.");
 
@@ -440,8 +438,6 @@ contract Marketplace is ReentrancyGuard, Ownable {
       }
     }
 
-    console.log("item length: ", myItemsLength);
-
     Item[] memory myItems = new Item[](myItemsLength);
 
     for (uint256 i = 0; i < totalItems; i++) {
@@ -452,8 +448,6 @@ contract Marketplace is ReentrancyGuard, Ownable {
         myItemsIndex++;
       }
     }
-
-    console.log("myItems.length: ", myItems.length);
 
     return myItems;
   }
@@ -551,7 +545,3 @@ contract Marketplace is ReentrancyGuard, Ownable {
     marketplaceStatus = _status;
   }
 }
-
-// console.log("Inside sold by me...");
-// console.log("myItemsIndex: ", myItemsIndex);
-// console.log("items[i].itemId: ", items[i].itemId);

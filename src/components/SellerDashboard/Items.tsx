@@ -10,8 +10,6 @@ const Items: FC<Props> = () => {
 
   const itemsCount = items?.length || 0;
 
-  console.log("myItems: ", items);
-
   return (
     <div className="flex-auto min-w-full md:min-w-0 md:w-[40%]">
       <div className="flex flex-row items-baseline">

@@ -304,7 +304,7 @@ const CartTemplate: FC<Props> = () => {
 
       <div className="flex flex-row justify-between px-6 md:px-20 py-2 pt-8 md:pt-4">
         <p className="text-tertiary tracking-tight">Subtotal</p>
-        <p className="flex flex-col text-right text-tertiary tracking-tight truncate max-w-full">
+        <p className="flex flex-col text-right text-tertiary tracking-tight truncate max-w-[75%]">
           {subtotal
             ? subtotal.map((item, index) => <span key={index}>{item}</span>)
             : "-"}

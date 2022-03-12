@@ -36,8 +36,6 @@ const createListing = async ({
   const account = await window.ethereum.request({ method: "eth_accounts" });
   const signer = provider.getSigner(account[0]);
 
-  console.log("** itemIds passed down: ", itemIds);
-
   // Create ERC1155 Token
   const tokenId = await createToken({
     signer,

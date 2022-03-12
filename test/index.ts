@@ -25,25 +25,28 @@ describe("Tri Marketplace Unit Tests", () => {
     [seller, buyer] = await ethers.getSigners();
   });
 
-  // beforeEach(async () => {});
-
   // Deployment
   describe("Deployment", () => {
     it("Should display the current version", async () => {
       expect(await marketplace.version()).to.equal(1);
     });
 
-    it("Should create a unique tokens", async () => {
-      const tokenUri = "https://www.token.com/";
-      expect(await token.createToken(tokenUri))
+    it("Should create a unique token", async () => {
+      const tokenUri = "bacon";
+
+      expect(await token.createToken(tokenUri, 5))
         .to.emit(token, "TokenCreated")
-        .withArgs(1, tokenUri);
+        .withArgs(0);
     });
   });
 
+  // Seller methods
   describe("Seller", () => {
     let tokenCount = 0;
-    const testImage = "https://www.image.com/test.jpg";
+    let itemCount = 0;
+    let listingCount = 0;
+    const tokenUri = "testUri";
+    const hash = "testHash";
     const price = ethers.utils.parseUnits("1", "ether");
 
     it("Should create a seller", async () => {
@@ -52,55 +55,215 @@ describe("Tri Marketplace Unit Tests", () => {
         .withArgs(seller.address, true);
     });
 
-    it("Should not allow multiple seller registration", async () => {
+    it("Should not seller to register after initial registration", async () => {
       // Seller has already been created above
       expect(async () => await marketplace.createSeller()).to.Throw;
     });
 
     it("Should create an item", async () => {
-      await token.createToken(`https://www.token.com/${tokenCount}`);
-      tokenCount++;
+      await token.createToken(tokenUri, 1);
 
-      const createItemArgs: [number, string, string, BigNumber, string] = [
+      const createItemArgs: [number, string, string, BigNumber] = [
         tokenCount,
         token.address,
-        "Test item",
+        hash,
         price,
-        testImage,
       ];
 
       expect(await marketplace.createItem(...createItemArgs))
         .to.emit(marketplace, "ItemCreated")
-        .withArgs(tokenCount, seller.address, ...createItemArgs);
+        .withArgs(itemCount, ...createItemArgs, seller.address);
+
+      tokenCount++;
+      itemCount++;
     });
 
-    it("Should create a listing", async () => {
-      await token.createToken(`https://www.token.com/${tokenCount}`);
-      tokenCount++;
+    it("Should create a listing with NO items", async () => {
+      await token.createToken(tokenUri, 1);
 
-      const createListingArgs: [
-        number,
-        string,
-        string,
-        BigNumber,
-        string,
-        string
-      ] = [
+      const createListingArgs: [number, string, string, BigNumber] = [
         tokenCount,
         token.address,
-        "Test Listing",
+        "First Test Listing",
         price,
-        testImage,
-        "Test Description",
       ];
 
-      expect(await marketplace.createListing(...createListingArgs))
+      const itemIds: number[] = [];
+
+      expect(await marketplace.createListing(...createListingArgs, itemIds))
         .to.emit(marketplace, "ListingCreated")
-        .withArgs(tokenCount, seller.address, ...createListingArgs);
+        .withArgs(listingCount, ...createListingArgs, seller.address, true, []);
+
+      tokenCount++;
+      listingCount++;
+    });
+
+    it("Should create a listing with ONE item", async () => {
+      const itemId = itemCount - 1;
+
+      await token.createToken(tokenUri, 1);
+
+      const createListingArgs: [number, string, string, BigNumber] = [
+        tokenCount,
+        token.address,
+        "Second Test Listing",
+        price,
+      ];
+
+      const itemIds: number[] = [itemId];
+
+      expect(await marketplace.createListing(...createListingArgs, itemIds))
+        .to.emit(marketplace, "ListingCreated")
+        .withArgs(listingCount, ...createListingArgs, seller.address, true, [
+          itemId,
+        ]);
+
+      tokenCount++;
+      listingCount++;
+    });
+
+    it("Should toggle active/inactive listing status", async () => {
+      const listingId = listingCount - 1;
+
+      // Listing status should be false
+      expect(await marketplace.toggleListingStatus(listingId))
+        .to.emit(marketplace, "ListingStatusUpdated")
+        .withArgs(listingId, false);
+
+      // Listing status should be back to true
+      expect(await marketplace.toggleListingStatus(listingId))
+        .to.emit(marketplace, "ListingStatusUpdated")
+        .withArgs(listingId, true);
+    });
+
+    it("Should NOT be able to buy own listing", async () => {
+      // Previously created listing with ID 0
+      const listingIds: number[] = [0];
+      const itemIds: number[] = [];
+
+      const createOrderArgs: [number[], number[]] = [listingIds, itemIds];
+
+      expect(
+        async () =>
+          await marketplace.createOrder(...createOrderArgs, {
+            value: price,
+          })
+      ).to.Throw;
     });
   });
 
-  describe("Buyer", async () => {
-    it("Should create an order", async () => {});
+  // Buyer methods
+  describe("Buyer", () => {
+    let orderCount = 0;
+    const price = ethers.utils.parseUnits("1", "ether");
+
+    it("Should be able to buy a listing", async () => {
+      // Previously created listing with ID 0
+      const listingIds: number[] = [0];
+      const itemIds: number[] = [];
+
+      const createOrderArgs: [number[], number[]] = [listingIds, itemIds];
+
+      expect(
+        await marketplace.connect(buyer).createOrder(...createOrderArgs, {
+          value: price,
+        })
+      )
+        .to.emit(marketplace, "OrderCreated")
+        .withArgs(
+          orderCount,
+          price,
+          seller.address,
+          buyer.address,
+          listingIds,
+          itemIds
+        );
+
+      orderCount++;
+    });
+
+    it("Should be able to buy a listing WITH items", async () => {
+      // Previously created listing with ID 1
+      const listingIds: number[] = [1];
+      const itemIds: number[] = [0];
+      const totalPrice = ethers.utils.parseUnits("2", "ether");
+
+      const createOrderArgs: [number[], number[]] = [listingIds, itemIds];
+
+      expect(
+        await marketplace.connect(buyer).createOrder(...createOrderArgs, {
+          value: totalPrice,
+        })
+      )
+        .to.emit(marketplace, "OrderCreated")
+        .withArgs(
+          orderCount,
+          totalPrice,
+          seller.address,
+          buyer.address,
+          listingIds,
+          itemIds
+        );
+
+      orderCount++;
+    });
+
+    it("Should NOT be able to buy an item with insufficient funds", async () => {
+      // Previously created listing with ID 1
+      const listingIds: number[] = [1];
+      const itemIds: number[] = [];
+      const insufficientPrice = ethers.utils.parseUnits("0.5", "ether");
+
+      const createOrderArgs: [number[], number[]] = [listingIds, itemIds];
+
+      expect(
+        async () =>
+          await marketplace.createOrder(...createOrderArgs, {
+            value: insufficientPrice,
+          })
+      ).to.Throw;
+    });
+
+    it("Should NOT be able to create an item", async () => {
+      const createItemArgs: [number, string, string, BigNumber] = [
+        0,
+        token.address,
+        "hash",
+        price,
+      ];
+
+      expect(async () => await marketplace.createItem(...createItemArgs)).to
+        .Throw;
+    });
+
+    it("Should NOT be able to create a listing", async () => {
+      const createListingArgs: [number, string, string, BigNumber, number[]] = [
+        0,
+        token.address,
+        "hash",
+        price,
+        [],
+      ];
+
+      expect(async () => await marketplace.createListing(...createListingArgs))
+        .to.Throw;
+    });
+  });
+
+  // Admin methods
+  describe("Admin", () => {
+    it("Should pause and resume the marketplace status", async () => {
+      // Marketplace is currently live
+      expect(await marketplace.marketplaceStatus()).to.equal(true);
+
+      // Pause marketplace
+      await marketplace.setMarketplaceStatus(false);
+
+      // Marketplace should be paused
+      expect(await marketplace.marketplaceStatus()).to.equal(false);
+
+      // Set marketplace back to live
+      await marketplace.setMarketplaceStatus(true);
+    });
   });
 });

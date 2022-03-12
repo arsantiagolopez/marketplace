@@ -90,8 +90,6 @@ const createOrder = async ({
     image,
   };
 
-  console.log("* completed order: ", order);
-
   return order;
 };
 
