@@ -38,7 +38,7 @@ const Explore: FC<Props> = () => {
                 } to browse their listings.`
               : `Check ${results?.length === 1 ? "it" : "them"} out!`
           }`
-      : "Try any of these. We dare you.";
+      : "Check these sellers out. We dare you.";
 
   // Trigger fetch when user stops typing
   useEffect(() => {

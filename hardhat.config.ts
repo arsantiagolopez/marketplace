@@ -12,6 +12,7 @@ dotenv.config();
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
+  defaultNetwork: "matic",
   solidity: {
     version: "0.8.4",
     settings: {
@@ -21,15 +22,15 @@ const config: HardhatUserConfig = {
       },
     },
   },
-  defaultNetwork: "rinkeby",
   networks: {
     hardhat: {
       chainId: 1337,
     },
-    rinkeby: {
-      url: process.env.RINKEBY_URL || "",
-      accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    matic: {
+      url: process.env.MATIC_URL ? process.env.MATIC_URL : undefined,
+      accounts: process.env.PRIVATE_KEY
+        ? [`0x${process.env.PRIVATE_KEY}`]
+        : undefined,
       gas: 2100000,
       gasPrice: 8000000000,
     },

@@ -76,7 +76,7 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
         user = { ...rest };
 
         // Include store name if isSeller
-        if (data?.isSeller) {
+        if (data?.isSeller && sellerProfile.length) {
           const { name } = sellerProfile[0];
           user = { ...rest, store: name };
         }
