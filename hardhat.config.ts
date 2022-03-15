@@ -11,9 +11,10 @@ dotenv.config();
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
+console.log(process.env.ENVIRONMENT);
+
 const config: HardhatUserConfig = {
-  defaultNetwork:
-    process.env.ENVIRONMENT === "production" ? "matic" : "localhost",
+  defaultNetwork: "matic",
   solidity: {
     version: "0.8.4",
     settings: {
