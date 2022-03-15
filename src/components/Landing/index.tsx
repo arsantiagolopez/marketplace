@@ -6,7 +6,7 @@ interface Props {}
 
 const Landing: FC<Props> = () => {
   return (
-    <div className="flex flex-col h-screen items-center justify-center">
+    <div className="flex flex-col min-h-[calc(100vh-5rem)] items-center justify-center">
       <div className="flex flex-col md:flex-row items-start md:justify-center flex-wrap">
         <div className="relative flex flex-row items-baseline mr-3">
           <h1 className="text-4xl md:text-4xl font-Basic tracking-tight mr-44 md:mr-60">
