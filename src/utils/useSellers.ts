@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { getAllSellers } from "../blockchain";
+import { getAllSellers } from "../blockchain/Marketplace";
 import { SellerProfileEntity } from "../types";
 
 interface Response {

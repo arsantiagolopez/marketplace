@@ -3,7 +3,11 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import useSWR from "swr";
-import { getAllItems, getItemById, getListingById } from "../../blockchain";
+import {
+  getAllItems,
+  getItemById,
+  getListingById,
+} from "../../blockchain/Marketplace";
 import { Layout } from "../../components/Layout";
 import { ListingTemplate } from "../../components/ListingTemplate";
 import {

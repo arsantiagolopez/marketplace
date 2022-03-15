@@ -136,6 +136,7 @@ const updateSellerProfile = async (
         "sellerProfiles"
       )
         .update({ ...body, userId })
+        .match({ userId })
         .single();
 
       profile = data;

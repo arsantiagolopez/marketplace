@@ -24,7 +24,9 @@ const readIPFSField = async ({ cid, property }: Props): Promise<string> => {
       // Get image extension
       const extension = data.image.split(".").pop();
       // Encode name
-      const name = encodeURIComponent(data.name);
+      const noWhitespaceFirstCharacterName =
+        data.name[0] === " " ? data.name.substr(1) : data.name;
+      const name = encodeURIComponent(noWhitespaceFirstCharacterName);
       // Create slug
       const slug = `${name}.${extension}`;
       return `https://${cid}.ipfs.dweb.link/image/${slug}`;

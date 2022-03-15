@@ -3,7 +3,7 @@
 import Link from "next/link";
 import React, { FC, useContext, useEffect, useState } from "react";
 import { CgCheck } from "react-icons/cg";
-import { getBalanceOfTokenById } from "../../blockchain";
+import { getBalanceOfTokenById } from "../../blockchain/ERC1155Token";
 import { PreferencesContext } from "../../context/PreferencesContext";
 import {
   ItemEntity,

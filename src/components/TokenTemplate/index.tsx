@@ -1,5 +1,5 @@
 import React, { FC, useContext, useEffect, useState } from "react";
-import { getBalanceOfTokenById } from "../../blockchain";
+import { getBalanceOfTokenById } from "../../blockchain/ERC1155Token";
 import { PreferencesContext } from "../../context/PreferencesContext";
 import { ListingEntity, UserSession } from "../../types";
 import { useEthPrice } from "../../utils/useEthPrice";

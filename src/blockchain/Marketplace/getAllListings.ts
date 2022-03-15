@@ -86,7 +86,6 @@ const getAllListings = async (ethRate: string): Promise<ListingEntity[]> => {
     listings.push(newListing);
   }
 
-  console.log("all listings: ", listings);
   return listings;
 };
 

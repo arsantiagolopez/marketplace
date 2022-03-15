@@ -5,7 +5,7 @@ import { useForm, UseFormRegisterReturn } from "react-hook-form";
 import { CgCheck } from "react-icons/cg";
 import { IoArrowForward } from "react-icons/io5";
 import { RiLoader4Line } from "react-icons/ri";
-import { createSeller } from "../../blockchain";
+import { createSeller } from "../../blockchain/Marketplace";
 import { UserSession } from "../../types";
 import { CompletedCheck } from "../CompletedCheck";
 import { ConnectMetamask } from "../ConnectMetamask";

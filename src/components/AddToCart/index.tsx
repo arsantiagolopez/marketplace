@@ -1,7 +1,7 @@
 import React, { FC, useContext, useState } from "react";
 import { GoCheck } from "react-icons/go";
 import { IoCartSharp } from "react-icons/io5";
-import { getItemById } from "../../blockchain";
+import { getItemById } from "../../blockchain/Marketplace";
 import { CartContext } from "../../context/CartContext";
 import { CartItem, ItemEntity, ListingEntity } from "../../types";
 import { useEthPrice } from "../../utils/useEthPrice";

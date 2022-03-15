@@ -3,12 +3,13 @@ import Marketplace from "../../../artifacts/contracts/Marketplace.sol/Marketplac
 import { MARKETPLACE_ADDRESS } from "../../../config";
 import { ItemEntity } from "../../types";
 import { readIPFSField } from "../../utils/readIPFSField";
+import { usePrices } from "../../utils/usePrices";
 
 /**
  * Get all my items.
  * @returns an array of items.
  */
-const getMyItems = async (): Promise<ItemEntity[]> => {
+const getMyItems = async (ethRate: string): Promise<ItemEntity[]> => {
   let items: ItemEntity[] = [];
 
   const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -40,6 +41,14 @@ const getMyItems = async (): Promise<ItemEntity[]> => {
     const name = await readIPFSField({ cid: tokenHash, property: "name" });
     const image = await readIPFSField({ cid: tokenHash, property: "image" });
 
+    // Convert price to PricesEntity
+    const { convertPrice } = usePrices({ ethRate: ethRate! });
+
+    const prices = {
+      eth: price,
+      usd: convertPrice(price, "USD"),
+    };
+
     const newItem: ItemEntity = {
       itemId,
       name,
@@ -48,7 +57,7 @@ const getMyItems = async (): Promise<ItemEntity[]> => {
         tokenId,
         tokenContract,
         tokenHash,
-        price,
+        prices,
         seller,
       },
     };

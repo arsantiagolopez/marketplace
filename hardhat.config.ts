@@ -12,7 +12,8 @@ dotenv.config();
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
-  defaultNetwork: "matic",
+  // defaultNetwork: "matic",
+  defaultNetwork: "localhost",
   solidity: {
     version: "0.8.4",
     settings: {
@@ -26,14 +27,14 @@ const config: HardhatUserConfig = {
     hardhat: {
       chainId: 1337,
     },
-    matic: {
-      url: process.env.MATIC_URL ? process.env.MATIC_URL : undefined,
-      accounts: process.env.PRIVATE_KEY
-        ? [`0x${process.env.PRIVATE_KEY}`]
-        : undefined,
-      gas: 2100000,
-      gasPrice: 8000000000,
-    },
+    // matic: {
+    //   url: process.env.MATIC_URL ? process.env.MATIC_URL : undefined,
+    //   accounts: process.env.PRIVATE_KEY
+    //     ? [`0x${process.env.PRIVATE_KEY}`]
+    //     : undefined,
+    //   gas: 2100000,
+    //   gasPrice: 8000000000,
+    // },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,

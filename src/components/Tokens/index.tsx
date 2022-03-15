@@ -1,6 +1,6 @@
 import Link from "next/link";
 import React, { FC, useEffect, useState } from "react";
-import { getMyOwnedTokens } from "../../blockchain/Marketplace/getMyOwnedTokens";
+import { getMyOwnedTokens } from "../../blockchain/Marketplace";
 import { ItemEntity, ListingEntity } from "../../types";
 import { useEthPrice } from "../../utils/useEthPrice";
 import { PriceLabel } from "../SellerDashboard/PriceLabel";

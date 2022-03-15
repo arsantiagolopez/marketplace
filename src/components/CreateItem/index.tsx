@@ -6,7 +6,7 @@ import { CgCheck } from "react-icons/cg";
 import { HiOutlineUpload } from "react-icons/hi";
 import { IoCloseSharp } from "react-icons/io5";
 import { RiLoader4Line } from "react-icons/ri";
-import { createItem } from "../../blockchain";
+import { createItem } from "../../blockchain/Marketplace";
 import { PreferencesContext } from "../../context/PreferencesContext";
 import { FileWithPreview, UserSession } from "../../types";
 import { useEthPrice } from "../../utils/useEthPrice";

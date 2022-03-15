@@ -28,7 +28,6 @@ const MobileMenu: FC<Props> = ({
 
   const { cartCount } = useContext(CartContext);
 
-  // @todo
   return (
     <>
       {isMenuOpen ? (

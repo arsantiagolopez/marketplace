@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import React, { FC, useContext, useEffect, useState } from "react";
 import { GoCheck } from "react-icons/go";
 import { IoTrashOutline } from "react-icons/io5";
-import { createOrder } from "../../blockchain/Marketplace/createOrder";
+import { createOrder } from "../../blockchain/Marketplace";
 import { CartContext } from "../../context/CartContext";
 import { PreferencesContext } from "../../context/PreferencesContext";
 import { CartItem } from "../../types";

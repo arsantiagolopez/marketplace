@@ -8,7 +8,7 @@ import React, {
   useState,
 } from "react";
 import { IoPauseSharp, IoPlaySharp } from "react-icons/io5";
-import { getBalanceOfTokenById } from "../../blockchain";
+import { getBalanceOfTokenById } from "../../blockchain/ERC1155Token";
 import { toggleListingStatus } from "../../blockchain/Marketplace";
 import { PreferencesContext } from "../../context/PreferencesContext";
 import { ItemEntity, ListingEntity, SellerProfileEntity } from "../../types";
@@ -35,7 +35,8 @@ const SellerListingView: FC<Props> = ({
 
   const { currency, toggleCurrency } = useContext(PreferencesContext);
 
-  const { token, isActive, name, description, image } = listing || {};
+  const { listingId, token, isActive, name, description, image } =
+    listing || {};
   const { tokenId, tokenContract, prices } = token || {};
   const { name: sellerName, address: sellerAddress } = sellerProfile || {};
 
@@ -53,8 +54,8 @@ const SellerListingView: FC<Props> = ({
   // Pause item from being sold on the marketplace
   const toggleIsActive = async () => {
     if (listing) {
-      if (typeof tokenId === "number") {
-        const isActive = await toggleListingStatus(tokenId);
+      if (typeof listingId === "number") {
+        const isActive = await toggleListingStatus(listingId);
         setListing({ ...listing, isActive });
       }
     }

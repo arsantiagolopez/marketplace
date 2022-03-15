@@ -1,7 +1,7 @@
 import Link from "next/link";
 import React, { FC, useEffect, useState } from "react";
 import { IoIosCheckmarkCircle } from "react-icons/io";
-import { getBalanceOfTokenById } from "../../blockchain";
+import { getBalanceOfTokenById } from "../../blockchain/ERC1155Token";
 import { ListingEntity, SellerProfileEntity } from "../../types";
 import { useListings } from "../../utils/useListings";
 import { PriceLabel } from "../SellerDashboard/PriceLabel";
