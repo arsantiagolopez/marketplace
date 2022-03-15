@@ -16,6 +16,7 @@ import { usePrices } from "../../utils/usePrices";
 import { CompletedCheck } from "../CompletedCheck";
 import { Dialog } from "../Dialog";
 import { DropzoneField } from "../DropzoneField";
+import { LockScreen } from "../LockScreen";
 import { PriceCurrencyField } from "../PriceCurrencyField";
 import { Tooltip } from "../Tooltip";
 import { ItemsSelect } from "./ItemsSelect";
@@ -206,6 +207,7 @@ const CreateListing: FC<Props> = ({ session }) => {
     message:
       "You must create a seller profile to sell items on the Marketplace. Redirecting to registration page...",
   };
+  const lockScreenProps = { isLocked: isLoading, setIsLocked: setIsLoading };
 
   // Redirect on success
   useEffect(() => {
@@ -367,6 +369,9 @@ const CreateListing: FC<Props> = ({ session }) => {
 
       {/* Seller Registration Modal */}
       <Dialog {...sellerRegistrationDialogProps} />
+
+      {/* Lock screen while ongoing MetaMask transaction */}
+      <LockScreen {...lockScreenProps} />
     </div>
   );
 };

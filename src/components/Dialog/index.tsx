@@ -53,6 +53,7 @@ const Dialog: FC<Props> = ({
         <span className="inline-block h-screen align-middle" aria-hidden="true">
           &#8203;
         </span>
+
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"

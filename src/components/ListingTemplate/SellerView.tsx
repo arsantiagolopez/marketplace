@@ -15,6 +15,7 @@ import { ItemEntity, ListingEntity, SellerProfileEntity } from "../../types";
 import { useEthPrice } from "../../utils/useEthPrice";
 import { usePrices } from "../../utils/usePrices";
 import { Dropdown } from "../Dropdown";
+import { LockScreen } from "../LockScreen";
 import { PriceTag } from "../PriceTag";
 import { Tooltip } from "../Tooltip";
 
@@ -32,6 +33,7 @@ const SellerListingView: FC<Props> = ({
   items,
 }) => {
   const [quantity, setQuantity] = useState<number | null>(null);
+  const [isLocked, setIsLocked] = useState<boolean>(false);
 
   const { currency, toggleCurrency } = useContext(PreferencesContext);
 
@@ -53,12 +55,17 @@ const SellerListingView: FC<Props> = ({
 
   // Pause item from being sold on the marketplace
   const toggleIsActive = async () => {
+    // Lock screen while loading
+    setIsLocked(true);
+
     if (listing) {
       if (typeof listingId === "number") {
         const isActive = await toggleListingStatus(listingId);
         setListing({ ...listing, isActive });
       }
     }
+
+    setIsLocked(false);
   };
 
   const priceTagProps = {
@@ -67,6 +74,7 @@ const SellerListingView: FC<Props> = ({
     isListing: true,
     ethRate: ethRate!,
   };
+  const lockScreenProps = { isLocked, setIsLocked };
 
   // Get token quantity
   useEffect(() => {
@@ -261,6 +269,9 @@ const SellerListingView: FC<Props> = ({
           </div>
         </div>
       </div>
+
+      {/* Lock screen while ongoing MetaMask transaction */}
+      <LockScreen {...lockScreenProps} />
     </div>
   );
 };

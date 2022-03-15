@@ -10,6 +10,7 @@ import { UserSession } from "../../types";
 import { CompletedCheck } from "../CompletedCheck";
 import { ConnectMetamask } from "../ConnectMetamask";
 import { Dialog } from "../Dialog";
+import { LockScreen } from "../LockScreen";
 import { BuyerFields } from "./BuyerFields";
 import { SellerFields } from "./SellerFields";
 import { SellerSelect } from "./SellerSelect";
@@ -32,6 +33,7 @@ const RegisterForm: FC<Props> = ({ session }) => {
     useState<boolean>(false);
   const [metamaskError, setMetamaskError] = useState<string | null>(null);
   const [isRegistration, setIsRegistration] = useState<boolean>(true);
+  const [isLocked, setIsLocked] = useState<boolean>(false);
 
   const { handleSubmit, register, watch } = useForm<FormData>();
 
@@ -70,6 +72,9 @@ const RegisterForm: FC<Props> = ({ session }) => {
 
   // Handle submit
   const onSubmit = async ({ store, name }: FormData) => {
+    // Lock screen while loading
+    setIsLocked(true);
+
     if (user) {
       if (store) {
         // If not registered, register seller on the smart contract
@@ -107,6 +112,9 @@ const RegisterForm: FC<Props> = ({ session }) => {
         console.log("User account could not be created.");
       }
     }
+
+    // Unlock screen
+    setIsLocked(false);
   };
 
   // Form fields registration
@@ -118,26 +126,6 @@ const RegisterForm: FC<Props> = ({ session }) => {
         required: "What do you wanna call your store?",
       })
     : null;
-
-  // Redirect on success
-  useEffect(() => {
-    if (onSuccess) {
-      // Reload session by replicating a different tab click
-      const reloadSession = () => {
-        const event = new Event("visibilitychange");
-        document.dispatchEvent(event);
-      };
-
-      reloadSession();
-
-      setTimeout(() => {
-        router.push("/");
-      }, 3000);
-    }
-  }, [onSuccess]);
-
-  // Complete profile flag. It's a registration, until it's not
-  useEffect(() => setIsRegistration(!(!user?.name && user?.walletAddress)), []);
 
   const selectProps = { isSeller, setIsSeller };
   const sellerProps = {
@@ -172,6 +160,27 @@ const RegisterForm: FC<Props> = ({ session }) => {
         : "Your profile was successfully completed."
     }`,
   };
+  const lockScreenProps = { isLocked, setIsLocked };
+
+  // Redirect on success
+  useEffect(() => {
+    if (onSuccess) {
+      // Reload session by replicating a different tab click
+      const reloadSession = () => {
+        const event = new Event("visibilitychange");
+        document.dispatchEvent(event);
+      };
+
+      reloadSession();
+
+      setTimeout(() => {
+        router.push("/");
+      }, 3000);
+    }
+  }, [onSuccess]);
+
+  // Complete profile flag. It's a registration, until it's not
+  useEffect(() => setIsRegistration(!(!user?.name && user?.walletAddress)), []);
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-5rem)] pt-16 md:pt-20">
@@ -244,6 +253,9 @@ const RegisterForm: FC<Props> = ({ session }) => {
 
       {/* Show dialog on success */}
       <Dialog {...successDialogProps} />
+
+      {/* Lock screen while ongoing MetaMask transaction */}
+      <LockScreen {...lockScreenProps} />
     </div>
   );
 };

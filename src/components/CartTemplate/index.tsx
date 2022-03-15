@@ -11,6 +11,7 @@ import { getSecretEmoji } from "../../utils/getSecretEmoji";
 import { useEthPrice } from "../../utils/useEthPrice";
 import { usePrices } from "../../utils/usePrices";
 import { Dialog } from "../Dialog";
+import { LockScreen } from "../LockScreen";
 import { PriceLabel } from "../SellerDashboard/PriceLabel";
 
 interface Props {}
@@ -18,6 +19,7 @@ interface Props {}
 const CartTemplate: FC<Props> = () => {
   const [onSuccess, setOnSuccess] = useState<boolean>(false);
   const [cards, setCards] = useState<CartItem[] | null>(null);
+  const [isLocked, setIsLocked] = useState<boolean>(false);
 
   const router = useRouter();
 
@@ -129,37 +131,43 @@ const CartTemplate: FC<Props> = () => {
 
   // Create marketplace order
   const handleBuyNow = async () => {
+    // Lock screen while loading
+    setIsLocked(true);
+
     // Calculate accurate total price
-    const ethTotal = cartItems.reduce((acc, card) => {
-      const {
-        listing: {
-          token: { prices },
-        },
-        items,
-        quantity,
-      } = card;
+    const ethTotal = cartItems
+      .reduce((acc, card) => {
+        const {
+          listing: {
+            token: { prices },
+          },
+          items,
+          quantity,
+        } = card;
 
-      let itemTotal: number = 0;
+        let itemTotal: number = 0;
 
-      // Account for extras prices
-      if (items?.length) {
-        itemTotal = items.reduce((itemsAcc, item) => {
-          let {
-            token: { prices: itemPrices },
-          } = item;
-          return itemsAcc + parseFloat(itemPrices?.eth);
-        }, 0);
-      }
+        // Account for extras prices
+        if (items?.length) {
+          itemTotal = items.reduce((itemsAcc, item) => {
+            let {
+              token: { prices: itemPrices },
+            } = item;
+            return itemsAcc + parseFloat(itemPrices?.eth);
+          }, 0);
+        }
 
-      const price =
-        (parseFloat(prices?.eth) + parseFloat(String(itemTotal))) * quantity!;
+        const price =
+          (parseFloat(prices?.eth) + parseFloat(String(itemTotal))) * quantity!;
 
-      return acc + price;
-    }, 0);
+        return acc + price;
+      }, 0)
+      .toFixed(6);
 
     try {
+      console.log("price ", Number(ethTotal));
       // Make transaction
-      await createOrder({ cartItems, total: ethTotal });
+      await createOrder({ cartItems, total: Number(ethTotal) });
 
       // On success
       setOnSuccess(true);
@@ -168,6 +176,8 @@ const CartTemplate: FC<Props> = () => {
     } catch {
       console.log("The transaction could not be completed.");
     }
+
+    setIsLocked(false);
   };
 
   const successDialogProps = {
@@ -176,8 +186,9 @@ const CartTemplate: FC<Props> = () => {
     isCentered: true,
     type: "success",
     message:
-      "Congrats! Your order's in, the item's yours. Redirecting to your Tokens page.",
+      "Congrats! Your order's in, the item's yours. Check it out at your Tokens page.",
   };
+  const lockScreenProps = { isLocked, setIsLocked };
 
   // Bundle multiple listings into one card
   useEffect(() => {
@@ -338,6 +349,9 @@ const CartTemplate: FC<Props> = () => {
 
       {/* Success/failure Modal */}
       <Dialog {...successDialogProps} />
+
+      {/* Lock screen while ongoing MetaMask transaction */}
+      <LockScreen {...lockScreenProps} />
     </div>
   );
 };
