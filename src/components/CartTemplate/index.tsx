@@ -230,7 +230,6 @@ const CartTemplate: FC<Props> = () => {
               {cartCount} {cartCount === 1 ? "item" : "items"}
             </h1>
           </div>
-          <button className=""></button>
           <IoTrashOutline
             onClick={cleanCart}
             className="text-3xl md:text-4xl cursor-pointer text-tertiary hover:text-primary mb-4 md:mb-3 self-end"

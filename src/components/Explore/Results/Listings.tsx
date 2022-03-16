@@ -72,8 +72,14 @@ const Listings: FC<Props> = ({ listings }) => {
       )}
     </div>
   ) : (
-    <div className="flex flex-row items-center justify-center h-60 w-full text-tertiary text-center">
-      No listings available at the moment. Check back later.
+    <div className="py-4 md:py-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
+      {Array(5)
+        .fill(0)
+        .map((_, index) => (
+          <div key={index} className="w-full hover:cursor-pointer">
+            <div className="w-full h-52 md:h-80 aspect-square bg-gray-100 rounded-lg shadow-lg animate-pulse"></div>
+          </div>
+        ))}
     </div>
   );
 };
