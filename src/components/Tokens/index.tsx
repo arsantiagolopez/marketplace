@@ -78,7 +78,7 @@ const Tokens: FC<Props> = () => {
           Listings
         </h1>
 
-        {listings ? (
+        {listings?.length ? (
           <div className="w-full bg-white grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
             {listings.map(
               (
@@ -128,7 +128,7 @@ const Tokens: FC<Props> = () => {
           Extras
         </h1>
 
-        {items ? (
+        {items?.length ? (
           <div className="w-full bg-white grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
             {items.map(({ name, image, token: { prices } }, index) => (
               <div
