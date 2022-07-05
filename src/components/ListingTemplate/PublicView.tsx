@@ -102,7 +102,7 @@ const PublicListingView: FC<Props> = ({
           {/* Seller name */}
           {sellerName ? (
             <Link href={`/sellers/${sellerAddress}`}>
-              <h1 className="font-Basic text-2xl tracking-tighter truncate">
+              <h1 className="font-Basic text-2xl tracking-tighter truncate w-fit cursor-pointer">
                 {sellerName}'s
               </h1>
             </Link>
@@ -115,7 +115,7 @@ const PublicListingView: FC<Props> = ({
             {!name ? (
               <div className="h-12 w-56 bg-slate-100 rounded animate-pulse shadow-md"></div>
             ) : (
-              <h1 className="text-primary">{name}</h1>
+              <h1 className="text-primary truncate">{name}</h1>
             )}
           </div>
 

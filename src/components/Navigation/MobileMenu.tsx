@@ -85,13 +85,13 @@ const MobileMenu: FC<Props> = ({
                   <>
                     {isSeller ? (
                       <Link href="/dashboard">
-                        <button className="tracking-tight">
+                        <button className="tracking-tight truncate">
                           Seller dashboard
                         </button>
                       </Link>
                     ) : (
                       <Link href="/register">
-                        <button className="tracking-tight">
+                        <button className="tracking-tight truncate">
                           Become a seller
                         </button>
                       </Link>

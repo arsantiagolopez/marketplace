@@ -101,8 +101,7 @@ const Explore: FC<Props> = () => {
           {/* Query title and results info */}
           <div className="flex flex-col items-center min-h-[8rem]">
             <div className="flex flex-row justify-center items-center w-full">
-              {/* Multiline truncate */}
-              <h1 className="leading-[2.75rem] max-h-[6rem] ellipsis overflow-hidden text-5xl font-Basic text-primary pt-0 md:pt-8 py-3 tracking-tight">
+              <h1 className="leading-[2.75rem] line-clamp-2 text-5xl font-Basic text-primary pt-0 md:pt-8 py-3 tracking-tight w-[90%] md:w-auto text-center">
                 {query === ""
                   ? "What are you looking for?"
                   : query ?? "Featured"}
@@ -111,10 +110,10 @@ const Explore: FC<Props> = () => {
                 <CompletedCheck
                   isCompleted={triggerSearch}
                   CustomCheck={
-                    <CgCheck className="text-5xl ml-1 pointer-events-none text-gray-200" />
+                    <CgCheck className="text-5xl ml-1 pointer-events-none text-gray-200 md:mt-8" />
                   }
                   CustomSpinner={
-                    <RiLoader4Line className="text-4xl ml-3 mr-1 pointer-events-none text-gray-200 animate-spin-slow" />
+                    <RiLoader4Line className="text-4xl ml-3 mr-1 pointer-events-none text-gray-200 animate-spin-slow md:mt-8" />
                   }
                 />
               )}

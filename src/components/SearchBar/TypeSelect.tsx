@@ -33,7 +33,11 @@ const TypeSelect: FC<Props> = ({ options, selected, handleSelect }) => (
             {options.map((option, index) => (
               <Listbox.Option key={index} value={option} className="">
                 {({ selected }) => (
-                  <p className="flex flex-row justify-between items-center active:bg-gray-200 hover:bg-gray-100 text-sm capitalize cursor-pointer py-3 px-5">
+                  <p
+                    className={`flex flex-row justify-between items-center active:bg-gray-200 hover:bg-gray-100 text-sm capitalize cursor-pointer py-3 px-5 font-Basic ${
+                      selected ? "text-primary" : "text-tertiary"
+                    }`}
+                  >
                     {option.toLowerCase()}
                     {selected && <CgCheck className="text-lg" />}
                   </p>

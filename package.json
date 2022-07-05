@@ -14,6 +14,7 @@
     "@react-three/drei": "^8.8.0",
     "@react-three/fiber": "^7.0.26",
     "@supabase/supabase-js": "^1.29.3",
+    "@tailwindcss/line-clamp": "^0.4.0",
     "@types/formidable": "^2.0.4",
     "@types/react-dropzone": "^5.1.0",
     "axios": "^0.25.0",
@@ -43,8 +44,8 @@
     "@types/chai": "^4.3.0",
     "@types/jsonwebtoken": "^8.5.8",
     "@types/mocha": "^9.0.0",
-    "@types/node": "17.0.8",
-    "@types/react": "17.0.38",
+    "@types/node": "^18.0.1",
+    "@types/react": "18.0.1",
     "@types/three": "^0.137.0",
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
@@ -70,8 +71,8 @@
     "solhint": "^3.3.6",
     "solidity-coverage": "^0.7.17",
     "tailwindcss": "^3.0.12",
-    "ts-node": "^10.4.0",
+    "ts-node": "^10.8.2",
     "typechain": "^5.2.0",
-    "typescript": "4.5.4"
+    "typescript": "^4.7.4"
   }
 }

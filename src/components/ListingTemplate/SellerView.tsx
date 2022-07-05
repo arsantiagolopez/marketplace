@@ -116,7 +116,7 @@ const SellerListingView: FC<Props> = ({
             {!name ? (
               <div className="h-12 w-56 bg-slate-100 rounded animate-pulse shadow-md"></div>
             ) : (
-              <h1 className={`text-primary ${!isActive && "pr-4"}`}>
+              <h1 className={`text-primary truncate ${!isActive && "pr-4"}`}>
                 {name}
                 {!isActive && (
                   <span className="text-2xl tracking-tighter text-tertiary italic ml-2">

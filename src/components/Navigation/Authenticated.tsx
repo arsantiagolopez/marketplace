@@ -57,17 +57,21 @@ const Authenticated: FC<Props> = ({ user, mutate }) => {
             <Logo />
           </div>
           <Link href="/">
-            <h1 className="text-xl font-Basic text-primary cursor-pointer">
+            <h1 className="text-xl font-Basic text-primary cursor-pointer truncate">
               {BRAND_NAME}
             </h1>
           </Link>
         </>
         <div className="hidden md:flex md:mx-10">
           <Link href="/explore">
-            <button className="font-Basic text-primary mx-4">Explore</button>
+            <button className="font-Basic text-primary mx-4 truncate">
+              Explore
+            </button>
           </Link>
           <Link href="/tokens">
-            <button className="font-Basic text-primary mx-4">My tokens</button>
+            <button className="font-Basic text-primary mx-4 truncate">
+              My tokens
+            </button>
           </Link>
           <Link href="/cart">
             <button className="flex flex-row items-center font-Basic text-primary mx-4">
@@ -101,7 +105,7 @@ const Authenticated: FC<Props> = ({ user, mutate }) => {
                 <EditProfileButton {...editProfileButtonProps} />
                 {isSeller ? (
                   <Link href="/dashboard">
-                    <button className="font-Basic text-sm text-white bg-primary px-6 py-1.5 ml-2 rounded-full hover:bg-secondary">
+                    <button className="font-Basic text-sm text-white bg-primary px-6 py-1.5 ml-2 rounded-full truncate hover:bg-secondary">
                       Seller dashboard
                     </button>
                   </Link>

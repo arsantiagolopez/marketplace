@@ -124,11 +124,10 @@ const SellerTemplate: FC<Props> = ({ sellerProfile }) => {
                         <PriceLabel prices={prices} />
                       </div>
                       <div className="flex flex-col py-2">
-                        <h1 className="font-Basic text-xl font-bold tracking-tight capitalize">
+                        <h1 className="font-Basic text-xl font-bold tracking-tight capitalize line-clamp-2 leading-6 py-1">
                           {name}
                         </h1>
-                        {/* Tailwind multiline truncate fix */}
-                        <p className="text-tertiary leading-6 max-h-[3rem] ellipsis overflow-hidden">
+                        <p className="text-tertiary leading-6 line-clamp-2">
                           {description}
                         </p>
                       </div>
