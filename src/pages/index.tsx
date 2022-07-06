@@ -9,8 +9,7 @@ import { Layout } from "../components/Layout";
 const IndexPage: NextPage = () => {
   const { data: session, status } = useSession();
 
-  const authenticated = session && status !== "loading";
-  const title = authenticated ? "Explore" : "Marketplace";
+  const title = session ? "Explore" : "Marketplace";
 
   if (status !== "loading") {
     return (
@@ -21,7 +20,7 @@ const IndexPage: NextPage = () => {
           </title>
           <link rel="icon" href="/favicon.ico" />
         </Head>
-        <Layout>{authenticated ? <Explore /> : <Landing />}</Layout>
+        <Layout>{session ? <Explore /> : <Landing />}</Layout>
       </>
     );
   }

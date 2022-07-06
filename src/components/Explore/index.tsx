@@ -78,12 +78,13 @@ const Explore: FC<Props> = () => {
           listings?.filter(({ name }) =>
             name.toLowerCase().includes(query.toLowerCase())
           ) || null;
+
         filteredResults = filteredArr;
       }
     }
 
     setResults(filteredResults);
-  }, [sellers, listings, type, triggerSearch]);
+  }, [sellers, listings, type, triggerSearch, query]);
 
   const searchBarProps = { query, setQuery, setType };
   const resultsProps = { type, results, query };

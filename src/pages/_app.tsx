@@ -23,6 +23,7 @@ const MyApp: NextPage<AppProps> = ({
   pageProps: { session, ...pageProps },
 }) => (
   <SessionProvider session={session}>
+    {/* @ts-ignore */}
     <SWRConfig
       value={{
         fetcher: (url) => axios(url).then((res) => res.data),

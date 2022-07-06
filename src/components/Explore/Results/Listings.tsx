@@ -41,7 +41,7 @@ const Listings: FC<Props> = ({ listings }) => {
 
   useEffect(() => {
     getAvailableListings();
-  }, []);
+  }, [listings]);
 
   return availableListings ? (
     <div className="py-4 md:py-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">

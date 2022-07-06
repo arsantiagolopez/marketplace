@@ -13,7 +13,7 @@ const TypeSelect: FC<Props> = ({ options, selected, handleSelect }) => (
   <Listbox value={selected} onChange={handleSelect}>
     {({ open }) => (
       <div className="relative h-full flex items-center">
-        <Listbox.Button className="flex justify-between items-center w-48 h-3/6 px-6 capitalize font-Basic text-xl text-secondary border-l-2 border-gray-100">
+        <Listbox.Button className="flex justify-between items-center w-40 md:w-48 h-3/6 px-6 capitalize font-Basic text-xl text-secondary border-l-2 border-gray-100">
           {selected.toLowerCase()}
           <IoChevronDownSharp
             className={`transition-transform duration-300 ${

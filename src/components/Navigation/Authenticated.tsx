@@ -122,7 +122,7 @@ const Authenticated: FC<Props> = ({ user, mutate }) => {
         ) : (
           <div className="hidden md:flex flex-row h-full items-center mx-6">
             <Link href="/register">
-              <button className="font-Basic text-sm text-white bg-primary px-6 py-1.5 ml-2 rounded-full hover:bg-secondary">
+              <button className="font-Basic text-sm text-white bg-primary px-6 py-1.5 ml-2 rounded-full hover:bg-secondary truncate">
                 Complete your profile
               </button>
             </Link>

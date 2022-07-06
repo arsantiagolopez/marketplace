@@ -22,8 +22,8 @@
   <a href="#features">Features</a> •
   <a href="#tech">Tech Stack</a> •
   <a href="#inspiration">Inspiration</a> •
+  <a href="#objectives">Learning</a> •
   <a href="#license">License</a> •
-  <a href="#objectives">Learning Objectives</a> •
   <a href="#contact">Contact</a>
 </div>
 
