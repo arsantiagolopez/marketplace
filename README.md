@@ -70,11 +70,11 @@
   </tr>
   <tr>
       <td><a href="https://reactjs.org/">React</a></td>
-      <td>To build a component based user interface.</td>
+      <td>Build a component based user interface.</td>
   </tr>
   <tr>
       <td><a href="https://nextjs.org/">Next.js</a></td>
-      <td>Server side rendering (SSR) of React components.</td>
+      <td>Server-side rendering (SSR) of React components.</td>
   </tr>
     <tr>
     <td><a href="https://tailwindcss.com/">Tailwind CSS</td>
@@ -114,7 +114,7 @@
   </tr>
   <tr>
       <td><a href="https://axios-http.com/docs/intro">Axios</a></td>
-      <td>HTTP promise based data fetching requests.</td>
+      <td>HTTP promise-based data fetching requests.</td>
   </tr>
   <tr>
       <td><a href="https://momentjs.com/">Moment.js</a></td>
@@ -195,20 +195,8 @@
       <td>NFT storage system with a great free plan.</td>
     </tr>
     <tr>
-        <td><a href="https://hardhat.org/">Hardhat</a></td>
-        <td>Ethereum development environment to compile smart contracts.</td>
-    </tr>
-    <tr>
-        <td><a href="https://docs.ethers.io/v5/">Ethers.js</a></td>
-        <td>Interact with the Ethereum blockchain.</td>
-    </tr>
-    <tr>
         <td><a href="https://www.alchemy.com/">Alchemy</a></td>
         <td>Blockchain development tools. Access the blockchain locally.</td>
-    </tr>
-    <tr>
-        <td><a href="https://mochajs.org/">Mocha/Chai</a></td>
-        <td>Test smart contracts.</td>
     </tr>
     <tr>
         <td><a href="https://vercel.com/">Vercel</a></td>

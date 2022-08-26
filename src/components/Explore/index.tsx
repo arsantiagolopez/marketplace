@@ -84,7 +84,7 @@ const Explore: FC<Props> = () => {
     }
 
     setResults(filteredResults);
-  }, [sellers, listings, type, triggerSearch, query]);
+  }, [sellers, listings, type, query]);
 
   const searchBarProps = { query, setQuery, setType };
   const resultsProps = { type, results, query };
